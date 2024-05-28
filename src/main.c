@@ -26,25 +26,58 @@ int	count_argc(char *str)
 			i++;
 			while (str[i] && str[i] != 34)
 				i++;
+			if (!str[i])
+				printf("Error quote\n");
 		}
 		if (str[i] == 39)
 		{
 			i++;
 			while (str[i] && str[i] != 39)
 				i++;
+			if (!str[i])
+				printf("Error quote\n");
 		}
 	}
 	return (count);
 }
 
-int	minishell(char *line)
+char	*next_argv(char *line, int *x)
 {
-	int	argc;
-	char **lex;
+	while (line[*x])
+}
+
+char	**fill_lex(char *line, int argc)
+{
+	char	**lex;
+	int		i = 0;
+	int		x = 0;
+
+	lex = malloc(sizeof(char *) * (argc + 1));
+	while (i < argc)
+	{
+		lex[i] = next_argv(line, &x);
+		i++;
+	}	
+	return (lex);
+}
+
+char	**lexing(char *line)
+{
+	int		argc;
+	char	**lex;
 
 	argc = count_argc(line);
 	printf("argc; %d\n", argc);
+	lex = fill_lex(line, argc);
 
+	return (NULL);
+}
+
+int	minishell(char *line)
+{
+	char **lex;
+
+	lex = lexing(line);
 
 	return (0);
 }
@@ -59,17 +92,13 @@ int main(void)
 	if (fd == -1)
 		return (1);
 	line = get_next_line(fd);
-	if (line)
-		line[ft_strlen(line) - 1] = 0;
 	while (line)
 	{
-		printf("%s\n", line);
+		printf("%s", line);
 		minishell(line);
 		printf("\n");
 		free(line);
 		line = get_next_line(fd);
-		if (line)
-			line[ft_strlen(line) - 1] = 0;
 	}
 	free(line);
 	return (0);
