@@ -1,1 +1,1 @@
-test | 'te|s"t' test > test
+test> | "test"||''''''

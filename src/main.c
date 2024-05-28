@@ -1,77 +1,44 @@
 #include "../inc/minishell.h"
 
-	// LEX,
 	// GREAT,
 	// LESS,
 	// PIPE,
 
-char	find_character(char c)
+int	is_a_token(char c)
 {
-	if (c == '>')
-		return (GREAT);
-	if (c == '<')
-		return (LESS);
-	if (c == '|')
-		return (PIPE);
-	return (c);
+	if (c == '|' || c == '>' || c == '<')
+		return (1);
+	return (0);
 }
 
-void	print_buffer(char *str)
-{
-	int	i = 0;
-
-	while (str[i])
-	{		
-		if (str[i] == GREAT)
-			printf("GREAT");
-		else if (str[i] == LESS)
-			printf("LESS");
-		else if (str[i] == PIPE)
-			printf("PIPE");
-		else
-			printf("%c", str[i]);
-		i++;
-	}
-}
-
-void	simple_quote_lexing(char *line, char *str, int *i, int *x)
-{
-	while (line[*i] && line[*i] != 39)
-	{
-		str[*x] = line[*i];
-		(*i)++;
-		(*x)++;
-	}
-	if (!line[*i])
-	{
-		printf("Error simple quote\n");
-		return ;
-	}
-}
-
-void	lexing(char *line, char *str)
+int	lexing(char *str)
 {
 	int i = 0;
-	int	x = 0;
+	int count = 0;
 
-	while (line[i])
+	while (str[i])
 	{
-		if (line[i] == 39)
+		if (is_a_token(str[i]) || (str[i] != 32 && (str[i + 1] == 32 || !str[i + 1] || is_a_token(str[i + 1]))))
+			count++;
+		i++;
+		if (str[i] == 34)
 		{
 			i++;
-			simple_quote_lexing(line, str, &i, &x);
-			i++;
+			while (str[i] && str[i] != 34)
+				i++;
 		}
-		str[x] = find_character(line[i]);
-		i++;
-		x++;
+		if (str[i] == 39)
+		{
+			i++;
+			while (str[i] && str[i] != 39)
+				i++;
+		}
 	}
-	str[x] = 0;
+	return (count);
 }
 
 int main(void)
 {
-	char str[BIG_BUFFER];
 	char *line;
 	int i = 0;
 	int fd;
@@ -81,9 +48,9 @@ int main(void)
 		return (1);
 	line = get_next_line(fd);
 
-	lexing(line, str);
+	i = lexing(line);
+	printf("i; %d\n", i);
 
 	free(line);
-	print_buffer(str);
 	return (0);
 }
