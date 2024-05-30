@@ -207,11 +207,11 @@ char	*add_env_value(char *str, int start, int *i, char **env)
 	char	*little;
 
 	little = ft_substr(str, start, *i - start);
-	printf("little; %s\n", little);
-	// while (env[x])
-	// {
-	// 	if (ft_strnstr())
-	// }
+	printf("little %s\n", little);
+	while (env[x] && !ft_strnstr(env[x], little, ft_strlen(little)))
+		x++;
+	if (env[x])
+		return (env[x]);
 	return (NULL);
 }
 
@@ -221,19 +221,38 @@ char	*expand_env(char *str, char **env)
 	char	*lex;
 	int		start;
 
+	lex = malloc(sizeof(char) * 1);
+	lex[0] = 0;
 	while(str[i])
 	{
+		start = i;
+		while (str[i] && str[i] != '$')
+			i++;
+		lex = ft_strjoin(lex, ft_substr(str, start, i - start));
+
 		if (str[i] == '$')
 		{
 			i++;
 			start = i;
 			while (ft_isalpha(str[i]))
 				i++;
-			add_env_value(str, start, &i, env);
+			lex = ft_strjoin(lex, add_env_value(str, start, &i, env));
 		}
 		i++;
 	}
+	printf("str; %s\n", lex);
 	return (str);
+}
+
+int	there_is_a_dollar(char *str)
+{
+	int	i = 0;
+
+	while (str[i] && str[i] != '$')
+		i++;
+	if (str[i])
+		return (1);
+	return (0);
 }
 
 char	**expand_lex(char **lex, char **env)
@@ -243,7 +262,8 @@ char	**expand_lex(char **lex, char **env)
 	while (lex[i])
 	{
 		printf("%s\n", lex[i]);
-		lex[i] = expand_env(lex[i], env);
+		if (there_is_a_dollar(lex[i]))
+			lex[i] = expand_env(lex[i], env);
 		lex[i] = unquote(lex[i]);
 		i++;
 	}
