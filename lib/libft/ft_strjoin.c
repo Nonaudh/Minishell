@@ -21,7 +21,7 @@ char	*ft_strjoin(char const *s1, char const *s2)
 
 	i = 0;
 	z = 0;
-	if (!s1 || !s2)
+	if (!s1 && !s2)
 		return (NULL);
 	x = ft_strlen(s1) + ft_strlen(s2);
 	tab = malloc(sizeof(char) * (x + 1));

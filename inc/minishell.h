@@ -16,4 +16,8 @@ typedef enum e_token
 	PIPE,
 } t_token;
 
+void	print_tab(char **tab);
+void	free_the_tab(char **tab);
+char	**ft_str_tab_dup(char **tab1);
+
 # endif
