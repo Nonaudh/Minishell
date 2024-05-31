@@ -6,7 +6,10 @@ void	print_tab(char **tab)
 
 	while (tab[i])
 	{
-		printf("%s\n", tab[i]);
+		if (tab[i][0] == '\n')
+			printf("i; %d  backslashN\n", i);
+		else
+			printf("i; %d  %s\n", i, tab[i]);
 		i++;
 	}
 }
@@ -45,4 +48,29 @@ char	**ft_str_tab_dup(char **tab1)
 	}
 	tab2[i] = NULL;
 	return (tab2);
+}
+
+char	*ft_null_strjoin(char const *s1, char const *s2)
+{
+	char	*str;
+
+	if (!s1)
+		return ((char *)s2);
+	if (!s2)
+		return ((char *)s1);
+	str = ft_strjoin(s1, s2);
+	free((char *)s1);
+	return (str);
+}
+
+int ft_strchr_index(char const *str, int c)
+{
+	int	i;
+
+	i = 0;
+	while (str[i] != '\0' && str[i] != (char)c)
+		i++;
+	if (str[i] == (char)c)
+		return (i);
+	return (-1);
 }

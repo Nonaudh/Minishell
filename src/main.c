@@ -6,7 +6,7 @@
 
 int	is_a_token(char c)
 {
-	if (c == '|' || c == '>' || c == '<')
+	if (c == '|' || c == '>' || c == '<' || c == '\n')
 		return (1);
 	return (0);
 }
@@ -54,27 +54,18 @@ int	count_argc(char *str)
 {
 	int i = 0;
 	int count = 0;
+	int	quote;
 
 	while (str[i])
 	{
 		if (is_a_token(str[i]) || (str[i] > 32 && (str[i + 1] <= 32 || is_a_token(str[i + 1]))))
 			count++;
 		i++;
-		if (str[i] == 34)
+		if (str[i] == 34 || str[i] == 39)
 		{
+			quote = str[i];
 			i++;
-			while (str[i] && str[i] != 34)
-				i++;
-			if (!str[i])
-			{
-				printf("Error quote\n");
-				return (-1);
-			}			
-		}
-		if (str[i] == 39)
-		{
-			i++;
-			while (str[i] && str[i] != 39)
+			while (str[i] && str[i] != quote)
 				i++;
 			if (!str[i])
 			{
@@ -89,38 +80,29 @@ int	count_argc(char *str)
 
 char	*next_argv(char *line, int *x)
 {
-	int	i = *x;
 	char	*str;
 	int	start;
-	int	end;
 
-	while (line[i] <= 32)
-		i++;
-	if (is_a_token(line[i]))
+	if (!line[*x])
+		return (NULL);
+	while (line[*x] && line[*x] != '\n' && line[*x] <= 32)
+		(*x)++;
+	if (is_a_token(line[*x]))
 	{
-		str = ft_substr(line, i, 1);
-		*x = i + 1;
+		str = ft_substr(line, *x, 1);
+		(*x)++;
 		return (str);
 	}
-	start = i;
-	while (line[i] > 32 && !is_a_token(line[i]))
+	start = *x;
+	while (line[*x] > 32 && !is_a_token(line[*x]))
 	{
-		if (line[i] == 34)
-		{
-			i++;
-			while (line[i] != 34)
-				i++;
-		}
-		if (line[i] == 39)
-		{
-			i++;
-			while (line[i] != 39)
-				i++;
-		}
-		i++;
+		if (line[*x] == 34)
+			*x += ft_strchr_index(&line[*x + 1], 34) + 1;
+		if (line[*x] == 39)
+			*x += ft_strchr_index(&line[*x + 1], 39) + 1;
+		(*x)++;
 	}
-	str = ft_substr(line, start, i - start);
-	*x = i;
+	str = ft_substr(line, start, *x - start);
 	return (str);
 }
 
@@ -145,13 +127,12 @@ char	**lexing(char *line, char **env)
 	int		argc;
 	char	**lex;
 
-	argc = count_argc(line);
+	argc = count_argc(line) + 1;
 	printf("argc; %d\n", argc);
 	if (argc == -1)
 		return (NULL);
 	lex = fill_lex(line, argc);
 
-	
 	return (lex);
 }
 
@@ -159,6 +140,7 @@ char	*unquote(char *str)
 {
 	int		i = 0;
 	int		x = 0;
+	int		quote;
 	char	*lex;
 
 	lex = malloc(sizeof(char) *(ft_strlen(str) + 1));
@@ -166,21 +148,11 @@ char	*unquote(char *str)
 		return (NULL);
 	while (str[i])
 	{
-		if (str[i] == 34)
+		if (str[i] == 34 || str[i] == 39)
 		{
+			quote = str[i];
 			i++;
-			while (str[i] != 34)
-			{
-				lex[x] = str[i];
-				i++;
-				x++;
-			}
-			i++;
-		}
-		if (str[i] == 39)
-		{
-			i++;
-			while (str[i] != 39)
+			while (str[i] != quote)
 			{
 				lex[x] = str[i];
 				i++;
@@ -200,55 +172,58 @@ char	*unquote(char *str)
 	return (lex);
 }
 
-char	*add_env_value(char *str, int start, int *i, char **env)
+char	*add_env_value(char *str, int start, int i, char **env)
 {
 	char	*env_value;
 	int x = 0;
 	char	*little;
+	int		little_len;
 
-	little = ft_substr(str, start, *i - start);
-	printf("little %s\n", little);
-	while (env[x] && !ft_strnstr(env[x], little, ft_strlen(little)))
+	little = ft_substr(str, start, i - start);
+	little_len = ft_strlen(little);
+	while (env[x] && (little_len  < ft_strchr_index(env[x], '=')
+		|| !ft_strnstr(env[x], little, ft_strchr_index(env[x], '='))))
 		x++;
+	free(little);
 	if (env[x])
-		return (env[x]);
+		return (env[x] + little_len + 1);
 	return (NULL);
 }
 
 char	*expand_env(char *str, char **env)
 {
 	int	i = 0;
-	char	*lex;
+	char	*lex = NULL;
+	char	*env_value;
 	int		start;
 
-	lex = malloc(sizeof(char) * 1);
-	lex[0] = 0;
 	while(str[i])
 	{
 		start = i;
-		while (str[i] && str[i] != '$')
+		while (str[i] && (str[i] != '$' || !ft_isalnum(str[i + 1])) && str[i] != '\'')
 			i++;
-		lex = ft_strjoin(lex, ft_substr(str, start, i - start));
 
+		if (str[i] == '\'')
+			i += (ft_strchr_index(&str[i + 1], '\'') + 2);
+
+		lex = ft_null_strjoin(lex, ft_substr(str, start, i - start));
 		if (str[i] == '$')
 		{
 			i++;
 			start = i;
 			while (ft_isalpha(str[i]))
 				i++;
-			lex = ft_strjoin(lex, add_env_value(str, start, &i, env));
+			lex = ft_null_strjoin(lex, add_env_value(str, start, i, env));
 		}
-		i++;
 	}
-	printf("str; %s\n", lex);
-	return (str);
+	return (lex);
 }
 
 int	there_is_a_dollar(char *str)
 {
 	int	i = 0;
 
-	while (str[i] && str[i] != '$')
+	while (str[i] && (str[i] != '$' || !ft_isalnum(str[i + 1])))	
 		i++;
 	if (str[i])
 		return (1);
@@ -261,7 +236,6 @@ char	**expand_lex(char **lex, char **env)
 
 	while (lex[i])
 	{
-		printf("%s\n", lex[i]);
 		if (there_is_a_dollar(lex[i]))
 			lex[i] = expand_env(lex[i], env);
 		lex[i] = unquote(lex[i]);
