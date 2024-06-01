@@ -50,16 +50,35 @@ char	**ft_str_tab_dup(char **tab1)
 	return (tab2);
 }
 
-char	*ft_null_strjoin(char const *s1, char const *s2)
+char	*ft_strjoin_dup_free_s1(char const *s1, char const *s2)
 {
 	char	*str;
 
-	if (!s1)
-		return ((char *)s2);
-	if (!s2)
-		return ((char *)s1);
-	str = ft_strjoin(s1, s2);
-	free((char *)s1);
+	if (!s1 && s2)
+		str = ft_strdup(s2);
+	else
+	{
+		str = ft_strjoin(s1, s2);
+		free((char *)s1);		
+	}
+	return (str);
+}
+
+char	*ft_strjoin_dup_frees(char const *s1, char const *s2)
+{
+	char	*str;
+
+	if (!s1 && s2)
+	{
+		str = ft_strdup(s2);
+		free((char *)s2);
+	}
+	else
+	{
+		str = ft_strjoin(s1, s2);
+		free((char *)s2);
+		free((char *)s1);		
+	}
 	return (str);
 }
 

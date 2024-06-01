@@ -33,7 +33,7 @@ size_t	ft_strlcpy(char *dest, const char *src, size_t size)
 	return (x);
 }
 
-char	*ft_strchr(const char *src, int c)
+char	*ft_strchr_gnl(const char *src, int c)
 {
 	int	i;
 

@@ -69,7 +69,7 @@ char	*fill_the_lines(int fd, char *lines, char *buffer)
 	int	x;
 
 	x = 1;
-	while (!(ft_strchr(buffer, '\n')) && x != 0)
+	while (!(ft_strchr_gnl(buffer, '\n')) && x != 0)
 	{
 		x = read(fd, buffer, BUFFER_SIZE);
 		if (x >= 0)
