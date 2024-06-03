@@ -60,7 +60,8 @@ int	count_argc(char *str)
 	{
 		while (str[i] <= 32 && str[i] != '\n')
 			i++;
-		if (is_a_char_token(str[i]) || (str[i] > 32 && str[i + 1] <= 32))
+		if (is_a_char_token(str[i])
+		|| (str[i] > 32 && (str[i + 1] <= 32 || is_a_char_token(str[i + 1]))))
 			count++;
 		if (str[i] == 34 || str[i] == 39)
 		{
@@ -73,6 +74,8 @@ int	count_argc(char *str)
 				printf("Error quote\n");
 				return (-1);
 			}
+			if (str[i + 1] <= 32 || is_a_char_token(str[i + 1]))
+				count++;
 		}
 		i++;
 	}
