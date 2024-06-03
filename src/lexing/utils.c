@@ -1,4 +1,4 @@
-#include "../inc/minishell.h"
+#include "../../inc/minishell.h"
 
 void	print_tab(char **tab)
 {
@@ -6,10 +6,10 @@ void	print_tab(char **tab)
 
 	while (tab[i])
 	{
-		if (tab[i][0] == '\n')
-			printf("i; %d  backslashN\n", i);
+		if (ft_ttoa(tab[i][0]))
+			printf("`%s'\n", ft_ttoa(tab[i][0]));
 		else
-			printf("i; %d  %s\n", i, tab[i]);
+			printf("%s\n", tab[i]);
 		i++;
 	}
 }

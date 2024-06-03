@@ -2,18 +2,18 @@ CC = cc
 
 CFLAGS = -g #-Wall -Wextra -Werror 
 
-SRC = src/main.c src/utils.c
+SRC = src/main.c src/lexing/lexing.c src/lexing/token.c src/lexing/expansion.c src/lexing/utils.c src/lexing/utils_2.c
 		
 OBJ = $(SRC:%.c=%.o)
 
-INCLUDE = -Llib/libft -lft
+INCLUDE = -Llib/libft -lft -Linc/minishell
 
 LIBFTDIR = lib/libft
 
 NAME = minishell
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o ${<:.c=.o}
+	$(CC) $(CFLAGS) -c $< -o ${<:.c=.o} 
 
 $(NAME) : $(OBJ) $(OBJ_BONUS) 
 	$(MAKE) -sC $(LIBFTDIR)
