@@ -22,11 +22,12 @@ int	check_syntax(char **lex)
 char	*create_token(t_token token)
 {
 	char	*str;
-	str = malloc(sizeof(str) * 2);
+	str = malloc(sizeof(char) * 2);
 	str[0] = token;
 	str[1] = 0;
 	return (str);
 }
+
 char	*ft_ttoa(t_token token)
 {
 	if (token == PIPE)
@@ -43,7 +44,6 @@ char	*ft_ttoa(t_token token)
 		return ("<<");
 	return (NULL);	
 }
-
 
 char	*return_token(char *str, int *x)
 {

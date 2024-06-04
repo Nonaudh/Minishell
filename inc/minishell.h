@@ -6,8 +6,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-# define BIG_BUFFER 100
-
 typedef enum e_token
 {
 	GREAT = 1,

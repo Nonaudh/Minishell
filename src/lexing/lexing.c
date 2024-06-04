@@ -6,7 +6,7 @@ char	*next_argv(char *line, int *x)
 	int	start;
 
 	if (!line[*x])
-		return (NULL);	
+		return (NULL);
 	while (line[*x] && line[*x] != '\n' && line[*x] <= 32)
 		(*x)++;
 	if (is_a_char_token(line[*x]))
@@ -41,12 +41,11 @@ char	**fill_lex(char *line, int argc)
 		i++;
 	}
 	lex[i] = NULL;
-	if (line[x])
-	{
-		free_the_tab(lex);
-		return (NULL);
-		//fill_lex(line, argc + 2);
-	}
+	// if (line[x])
+	// {
+	// 	free_the_tab(lex);
+	// 	return (NULL);
+	// }
 	return (lex);
 }
 
@@ -65,15 +64,13 @@ int	count_argc(char *str)
 			count++;
 		if (str[i] == 34 || str[i] == 39)
 		{
-			quote = str[i];
-			i++;
-			while (str[i] && str[i] != quote)
-				i++;
-			if (!str[i])
+			quote = ft_strchr_index(&str[i + 1], str[i]);
+			if (quote == -1)
 			{
 				printf("Error quote\n");
 				return (-1);
 			}
+			i = i + quote + 1;
 			if (str[i + 1] <= 32 || is_a_char_token(str[i + 1]))
 				count++;
 		}
@@ -94,11 +91,11 @@ char	**lexing(char *line, char **env)
 	lex = fill_lex(line, argc);
 	if (!lex)
 		return (NULL);
-	if (check_syntax(lex))
-	{
-		free_the_tab(lex);
-		return (NULL);
-	}
+	// if (check_syntax(lex))
+	// {
+	// 	free_the_tab(lex);
+	// 	return (NULL);
+	// }
 	lex = expand_lex(lex, env);
 
 	return (lex);

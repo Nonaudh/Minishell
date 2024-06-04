@@ -72,7 +72,7 @@ char	*expand_env(char *str, char **env)
 		{
 			i++;
 			start = i;
-			while (ft_isalpha(str[i]))
+			while (ft_isalnum(str[i]))
 				i++;
 			lex = ft_strjoin_dup_free_s1(lex, add_env_value(str, start, i, env));
 		}

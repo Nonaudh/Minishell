@@ -10,7 +10,7 @@ int	minishell(char *line, char **env)
 	if (!lex)
 		return (1);
 	print_tab(lex);
-	free_the_tab(lex);		
+	free_the_tab(lex);
 	return (0);
 }
 
