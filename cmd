@@ -1,1 +1,1 @@
-echo "salut'''"''''""'a'"tous" $HOME
+ls > 1 > 2 -la | wc -l > out

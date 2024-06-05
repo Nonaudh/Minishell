@@ -41,11 +41,6 @@ char	**fill_lex(char *line, int argc)
 		i++;
 	}
 	lex[i] = NULL;
-	// if (line[x])
-	// {
-	// 	free_the_tab(lex);
-	// 	return (NULL);
-	// }
 	return (lex);
 }
 
@@ -85,7 +80,7 @@ char	**lexing(char *line, char **env)
 	char	**lex;
 
 	argc = count_argc(line) + 2;
-	printf("argc; %d\n", argc);
+	//printf("argc; %d\n", argc);
 	if (argc == 0)
 		return (NULL);
 	lex = fill_lex(line, argc);

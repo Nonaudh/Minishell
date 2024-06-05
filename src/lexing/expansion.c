@@ -51,7 +51,7 @@ char	*add_env_value(char *str, int start, int i, char **env)
 	free(little);
 	if (env[x])
 		return (env[x] + little_len + 1);
-	return (ft_strchr(env[0], 0));
+	return (ft_strchr(str, 0));
 }
 
 char	*expand_env(char *str, char **env)
@@ -87,7 +87,7 @@ char	**expand_lex(char **lex, char **env)
 
 	while (lex[i])
 	{
-		if (there_is_a_dollar(lex[i]))
+		if (env_variable_detected(lex[i]))
 			lex[i] = expand_env(lex[i], env);
 		lex[i] = unquote(lex[i]);
 		i++;

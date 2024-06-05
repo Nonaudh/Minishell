@@ -16,12 +16,16 @@ int	is_a_token(t_token token)
 	return (0);
 }
 
-int	there_is_a_dollar(char *str)
+int	env_variable_detected(char *str)
 {
 	int	i = 0;
 
-	while (str[i] && (str[i] != '$' || !ft_isalnum(str[i + 1])))	
+	while (str[i] && (str[i] != '$' || !ft_isalnum(str[i + 1])))
+	{
+		if (str[i] == '\'')
+			i += ft_strchr_index(&str[i + 1], '\'') + 1;
 		i++;
+	}
 	if (str[i])
 		return (1);
 	return (0);

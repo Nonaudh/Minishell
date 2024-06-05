@@ -43,6 +43,6 @@ int 	ft_strchr_index(char const *str, int c);
 
 int	is_a_char_token(char c);
 int	is_a_token(t_token token);
-int	there_is_a_dollar(char *str);
+int	env_variable_detected(char *str);
 
 # endif
