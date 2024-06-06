@@ -51,7 +51,7 @@ char	*add_env_value(char *str, int start, int i, char **env)
 	free(little);
 	if (env[x])
 		return (env[x] + little_len + 1);
-	return (ft_strchr(str, 0));
+	return ("\0");
 }
 
 char	*expand_env(char *str, char **env)

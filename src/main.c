@@ -19,7 +19,7 @@ char *ft_readline(char *prompt)
 	char	*line;
 
 	ft_putstr_fd(prompt, 1);
-	line = get_next_line(1);// + ft_strlen(prompt);
+	line = get_next_line(1);
 	return (line);
 }
 
@@ -36,23 +36,29 @@ int main(int argc, char **argv, char **env_tmp)
 	env = ft_str_tab_dup(env_tmp);
 	if (!env)
 		return (1);
-	// while (line && i < 10)
-	// {
-	// 	line = get_next_line(fd);
-	// 	printf("%s", line);
-	// 	minishell(line, env);
-	// 	printf("\n");
-	// 	free(line);
-	// 	i++;
-	// }
-	while (i == 0 || ft_strncmp(line, "\n", 1))
-	{	
-		if (i)
+	if (argc == 1)
+	{
+			while (line && i < 10)
+		{
+			line = get_next_line(fd);
+			printf("%s", line);
+			minishell(line, env);
+			printf("\n");
 			free(line);
-		line = ft_readline("Minishell: ");
-		minishell(line, env);
-		printf("\n");
-		i = 1;
+			i++;	
+		}
+	}
+	else
+	{
+		while (i == 0 || ft_strncmp(line, "\n", 1))
+		{	
+			if (i)
+				free(line);
+			line = ft_readline("Minishell: ");
+			minishell(line, env);
+			printf("\n");
+			i = 1;
+		}	
 	}
 	free(line);
 	free_the_tab(env);
