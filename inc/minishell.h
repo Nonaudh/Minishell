@@ -3,8 +3,12 @@
 
 #include "../lib/libft/libft.h"
 
-#include <stdio.h>
+
 #include <fcntl.h>
+
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 typedef enum e_token
 {
@@ -13,13 +17,13 @@ typedef enum e_token
 	GREATGREAT,
 	LESSLESS,
 	PIPE,
-	NEWLINE,
+	T_NEWLINE,
 } t_token;
 
 int 	main(int argc, char **argv, char **env_tmp);
-int		minishell(char *line, char **env);
+int		minishell(char *line, char **env, int exit_status);
 
-char	**lexing(char *line, char **env);
+char	**lexing(char *line, char **env, int exit_status);
 int		count_argc(char *str);
 char	**fill_lex(char *line, int argc);
 char	*next_argv(char *line, int *x);
@@ -29,9 +33,9 @@ char	*ft_ttoa(t_token token);
 char	*create_token(t_token token);
 int		check_syntax(char **lex);
 
-char	**expand_lex(char **lex, char **env);
-char	*expand_env(char *str, char **env);
-char	*add_env_value(char *str, int start, int i, char **env);
+char	**expand_lex(char **lex, char **env, int exit_status);
+char	*expand_env(char *str, char **env, int exit_status);
+char	*add_env_value(char *str, int size, char **env, int exit_status);
 char	*unquote(char *str);
 
 void	print_tab(char **tab);

@@ -36,25 +36,31 @@ char	*unquote(char *str)
 	return (lex);
 }
 
-char	*add_env_value(char *str, int start, int i, char **env)
+char	*add_env_value(char *str, int size, char **env, int exit_status)
 {
 	char	*env_value;
 	int x = 0;
+	char	status[3];
 	char	*little;
 	int		little_len;
 
-	little = ft_substr(str, start, i - start);
+	little = ft_substr(str, 0, size);
 	little_len = ft_strlen(little);
+	if (little_len == 1 && little[0] == '?')
+	{
+		free(little);
+		return(ft_itoa(exit_status));
+	}
 	while (env[x] && (little_len  < ft_strchr_index(env[x], '=')
 		|| !ft_strnstr(env[x], little, ft_strchr_index(env[x], '='))))
 		x++;
 	free(little);
 	if (env[x])
-		return (env[x] + little_len + 1);
-	return ("\0");
+		return (ft_substr(env[x], little_len + 1, ft_strlen(env[x]) - (little_len + 1))); //env[x] + little_len + 1 );
+	return (ft_strdup("\0"));
 }
 
-char	*expand_env(char *str, char **env)
+char	*expand_env(char *str, char **env, int exit_status)
 {
 	int	i = 0;
 	char	*lex = NULL;
@@ -63,7 +69,7 @@ char	*expand_env(char *str, char **env)
 	while(str[i])
 	{
 		start = i;
-		while (str[i] && (str[i] != '$' || !ft_isalnum(str[i + 1])) && str[i] != '\'')
+		while (str[i] && (str[i] != '$' || !ft_isprint(str[i + 1])) && str[i] != '\'')
 			i++;
 		if (str[i] == '\'')
 			i += (ft_strchr_index(&str[i + 1], '\'') + 2);
@@ -72,23 +78,23 @@ char	*expand_env(char *str, char **env)
 		{
 			i++;
 			start = i;
-			while (ft_isalnum(str[i]))
+			while (ft_isprint(str[i]) && str[i] != '\'' && str[i] != '\"')
 				i++;
-			lex = ft_strjoin_dup_free_s1(lex, add_env_value(str, start, i, env));
+			lex = ft_strjoin_dup_frees(lex, add_env_value(str + start, i - start, env, exit_status));
 		}
 	}
 	free(str);
 	return (lex);
 }
 
-char	**expand_lex(char **lex, char **env)
+char	**expand_lex(char **lex, char **env, int exit_status)
 {
 	int i = 0;
 
 	while (lex[i])
 	{
 		if (env_variable_detected(lex[i]))
-			lex[i] = expand_env(lex[i], env);
+			lex[i] = expand_env(lex[i], env, exit_status);
 		lex[i] = unquote(lex[i]);
 		i++;
 	}

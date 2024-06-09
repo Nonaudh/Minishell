@@ -6,7 +6,7 @@ SRC = src/main.c src/lexing/lexing.c src/lexing/token.c src/lexing/expansion.c s
 		
 OBJ = $(SRC:%.c=%.o)
 
-INCLUDE = -Llib/libft -lft -Linc/minishell
+INCLUDE = -Llib/libft -lft -Linc/minishell -lreadline
 
 LIBFTDIR = lib/libft
 

@@ -63,7 +63,7 @@ int	count_argc(char *str)
 			if (quote == -1)
 			{
 				printf("Error quote\n");
-				return (-1);
+				return (-2);
 			}
 			i = i + quote + 1;
 			if (str[i + 1] <= 32 || is_a_char_token(str[i + 1]))
@@ -74,7 +74,7 @@ int	count_argc(char *str)
 	return (count);
 }
 
-char	**lexing(char *line, char **env)
+char	**lexing(char *line, char **env, int exit_status)
 {
 	int		argc;
 	char	**lex;
@@ -87,11 +87,12 @@ char	**lexing(char *line, char **env)
 	if (!lex)
 		return (NULL);
 	// if (check_syntax(lex))
+	
 	// {
 	// 	free_the_tab(lex);
 	// 	return (NULL);
 	// }
-	lex = expand_lex(lex, env);
+	lex = expand_lex(lex, env, exit_status);
 
 	return (lex);
 }

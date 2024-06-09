@@ -32,7 +32,7 @@ char	*ft_ttoa(t_token token)
 {
 	if (token == PIPE)
 		return ("|");
-	if (token == NEWLINE)
+	if (token == T_NEWLINE)
 		return ("newline");
 	if (token == GREAT)
 		return (">");
@@ -50,7 +50,7 @@ char	*return_token(char *str, int *x)
 	if (str[*x] == '|')
 		return (create_token(PIPE));
 	if (str[*x] == '\n')
-		return (create_token(NEWLINE));
+		return (create_token(T_NEWLINE));
 	if (str[*x] == '>')
 	{
 		if (str[*x + 1] == '>')

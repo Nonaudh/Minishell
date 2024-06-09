@@ -1,14 +1,14 @@
 #include "../inc/minishell.h"
 
-int	minishell(char *line, char **env)
+int	minishell(char *line, char **env, int exit_status)
 {
 	char **lex;
 
 	if (!line)
 		return (1);
-	lex = lexing(line, env);
+	lex = lexing(line, env, exit_status);
 	if (!lex)
-		return (1);
+		return (2);
 	print_tab(lex);
 	free_the_tab(lex);
 	return (0);
@@ -29,6 +29,7 @@ int main(int argc, char **argv, char **env_tmp)
 	char **env;
 	int i = 0;
 	int fd;
+	int	exit_status = 0;
 
 	fd = open("cmd", O_RDONLY);
 	if (fd == -1)
@@ -42,7 +43,7 @@ int main(int argc, char **argv, char **env_tmp)
 		{
 			line = get_next_line(fd);
 			printf("%s", line);
-			minishell(line, env);
+			exit_status = minishell(line, env, exit_status);
 			printf("\n");
 			free(line);
 			i++;	
@@ -54,13 +55,13 @@ int main(int argc, char **argv, char **env_tmp)
 		{	
 			if (i)
 				free(line);
-			line = ft_readline("Minishell: ");
-			minishell(line, env);
+			line = readline("Minishell: ");
+			exit_status = minishell(line, env, exit_status);
 			printf("\n");
 			i = 1;
 		}	
 	}
 	free(line);
 	free_the_tab(env);
-	return (0);
+	return (exit_status);
 }
