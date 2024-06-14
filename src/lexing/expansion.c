@@ -40,7 +40,6 @@ char	*add_env_value(char *str, int size, char **env, int exit_status)
 {
 	char	*env_value;
 	int x = 0;
-	char	status[3];
 	char	*little;
 	int		little_len;
 
@@ -79,7 +78,11 @@ char	*expand_env(char *str, char **env, int exit_status)
 			i++;
 			start = i;
 			while (ft_isprint(str[i]) && str[i] != '\'' && str[i] != '\"')
+			{
 				i++;
+				if (str[i - 1] == '?')
+					break ;			
+			}
 			lex = ft_strjoin_dup_frees(lex, add_env_value(str + start, i - start, env, exit_status));
 		}
 	}

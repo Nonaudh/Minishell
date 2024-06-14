@@ -3,6 +3,7 @@
 int	minishell(char *line, char **env, int exit_status)
 {
 	char **lex;
+	t_commands *cmd;
 
 	if (!line)
 		return (1);
@@ -10,17 +11,21 @@ int	minishell(char *line, char **env, int exit_status)
 	if (!lex)
 		return (2);
 	print_tab(lex);
+	cmd = parsing(lex, env);
 	free_the_tab(lex);
 	return (0);
 }
 
-char *ft_readline(char *prompt)
+char	*add_newline(char *line)
 {
-	char	*line;
+	char	*new_line;
 
-	ft_putstr_fd(prompt, 1);
-	line = get_next_line(1);
-	return (line);
+	new_line = malloc(sizeof(char) * (ft_strlen(line) + 2));
+	ft_memcpy(new_line, line, ft_strlen(line));
+	new_line[ft_strlen(line)] = '\n';
+	new_line[ft_strlen(line) + 1] = 0;
+	free(line);
+	return (new_line);
 }
 
 int main(int argc, char **argv, char **env_tmp)
@@ -29,7 +34,7 @@ int main(int argc, char **argv, char **env_tmp)
 	char **env;
 	int i = 0;
 	int fd;
-	int	exit_status = 0;
+	int	exit_status = 1;
 
 	fd = open("cmd", O_RDONLY);
 	if (fd == -1)
@@ -56,6 +61,7 @@ int main(int argc, char **argv, char **env_tmp)
 			if (i)
 				free(line);
 			line = readline("Minishell: ");
+			line = add_newline(line);
 			exit_status = minishell(line, env, exit_status);
 			printf("\n");
 			i = 1;

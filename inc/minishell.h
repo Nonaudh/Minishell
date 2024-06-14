@@ -20,6 +20,15 @@ typedef enum e_token
 	T_NEWLINE,
 } t_token;
 
+typedef struct s_commands
+{
+	char **arg;
+	char **env;
+	int fd_in;
+	int fd_out;
+} t_commands;
+
+
 int 	main(int argc, char **argv, char **env_tmp);
 int		minishell(char *line, char **env, int exit_status);
 
@@ -48,5 +57,9 @@ int 	ft_strchr_index(char const *str, int c);
 int	is_a_char_token(char c);
 int	is_a_token(t_token token);
 int	env_variable_detected(char *str);
+
+
+
+t_commands  *parsing(char **lex, char **env);
 
 # endif

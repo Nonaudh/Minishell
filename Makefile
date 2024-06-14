@@ -2,7 +2,8 @@ CC = cc
 
 CFLAGS = -g #-Wall -Wextra -Werror 
 
-SRC = src/main.c src/lexing/lexing.c src/lexing/token.c src/lexing/expansion.c src/lexing/utils.c src/lexing/utils_2.c
+SRC = src/main.c src/lexing/lexing.c src/lexing/token.c src/lexing/expansion.c \
+	src/lexing/utils.c src/lexing/utils_2.c src/parsing/parsing.c
 		
 OBJ = $(SRC:%.c=%.o)
 
