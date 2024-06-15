@@ -77,12 +77,8 @@ char	*expand_env(char *str, char **env, int exit_status)
 		{
 			i++;
 			start = i;
-			while (ft_isprint(str[i]) && str[i] != '\'' && str[i] != '\"')
-			{
+			while (ft_isprint(str[i]) && str[i] != '\'' && str[i] != '\"' && str[i - 1] != '?')
 				i++;
-				if (str[i - 1] == '?')
-					break ;			
-			}
 			lex = ft_strjoin_dup_frees(lex, add_env_value(str + start, i - start, env, exit_status));
 		}
 	}

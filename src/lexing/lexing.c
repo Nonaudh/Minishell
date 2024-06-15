@@ -28,6 +28,17 @@ char	*next_argv(char *line, int *x)
 	return (str);
 }
 
+int	add_token_newline(char **lex)
+{
+	int	i;
+
+	i = 0;
+	while (lex[i] && lex[i][0])
+		i++;
+	lex[i] = create_token(T_NEWLINE);
+	return (0);
+}
+
 char	**fill_lex(char *line, int argc)
 {
 	char	**lex;
@@ -40,6 +51,7 @@ char	**fill_lex(char *line, int argc)
 		lex[i] = next_argv(line, &x);
 		i++;
 	}
+	add_token_newline(lex);
 	lex[i] = NULL;
 	return (lex);
 }
@@ -79,7 +91,7 @@ char	**lexing(char *line, char **env, int exit_status)
 	int		argc;
 	char	**lex;
 
-	argc = count_argc(line) + 2;
+	argc = count_argc(line) + 3;
 	//printf("argc; %d\n", argc);
 	if (argc == 0)
 		return (NULL);

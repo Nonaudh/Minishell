@@ -30,7 +30,7 @@ int	nb_of_arg(char **lex, int x)
 			count++;			
 		}
 	}
-	retrun (count);
+	return (count);
 }
 
 t_commands *fill_the_struct(char **lex, char **env, int size)

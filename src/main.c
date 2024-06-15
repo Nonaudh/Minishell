@@ -19,11 +19,13 @@ int	minishell(char *line, char **env, int exit_status)
 char	*add_newline(char *line)
 {
 	char	*new_line;
+	int		line_lenght;
 
-	new_line = malloc(sizeof(char) * (ft_strlen(line) + 2));
-	ft_memcpy(new_line, line, ft_strlen(line));
-	new_line[ft_strlen(line)] = '\n';
-	new_line[ft_strlen(line) + 1] = 0;
+	line_lenght = ft_strlen(line);
+	new_line = malloc(sizeof(char) * (line_lenght + 2));
+	ft_memcpy(new_line, line, line_lenght);
+	new_line[line_lenght] = '\n';
+	new_line[line_lenght + 1] = 0;
 	free(line);
 	return (new_line);
 }
@@ -60,8 +62,8 @@ int main(int argc, char **argv, char **env_tmp)
 		{	
 			if (i)
 				free(line);
+			//line = add_newline(readline("Minishell: "));
 			line = readline("Minishell: ");
-			line = add_newline(line);
 			exit_status = minishell(line, env, exit_status);
 			printf("\n");
 			i = 1;
