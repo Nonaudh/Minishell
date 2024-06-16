@@ -98,12 +98,12 @@ char	**lexing(char *line, char **env, int exit_status)
 	lex = fill_lex(line, argc);
 	if (!lex)
 		return (NULL);
-	// if (check_syntax(lex))
+	if (check_syntax(lex))
 	
-	// {
-	// 	free_the_tab(lex);
-	// 	return (NULL);
-	// }
+	{
+		free_the_tab(lex);
+		return (NULL);
+	}
 	lex = expand_lex(lex, env, exit_status);
 
 	return (lex);

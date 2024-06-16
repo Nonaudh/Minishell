@@ -12,7 +12,9 @@ int	check_syntax(char **lex)
 
 	if (lex[i][0] == PIPE)
 		return (error_token(PIPE));
-	while (lex[i + 1] && !(is_a_token(lex[i][0]) && is_a_token(lex[i + 1][0])))
+	while (lex[i + 1]
+			&& !(lex[i][0] == PIPE && (lex[i + 1][0] == PIPE || lex[i + 1][0] == T_NEWLINE))
+			&& !(lex[i][0] != PIPE && is_a_token(lex[i][0]) && is_a_token(lex[i + 1][0])))
 		i++;
 	if (lex[i + 1])
 		return (error_token(lex[i + 1][0]));
