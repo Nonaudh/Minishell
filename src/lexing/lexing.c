@@ -92,7 +92,6 @@ char	**lexing(char *line, char **env, int exit_status)
 	char	**lex;
 
 	argc = count_argc(line) + 3;
-	//printf("argc; %d\n", argc);
 	if (argc == 0)
 		return (NULL);
 	lex = fill_lex(line, argc);

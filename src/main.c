@@ -49,7 +49,10 @@ int main(int argc, char **argv, char **env_tmp)
 			while (line && i < 10)
 		{
 			line = get_next_line(fd);
+			if (line)
+				line[ft_strlen(line) - 1] = 0;
 			printf("%s", line);
+			printf("\n");
 			exit_status = minishell(line, env, exit_status);
 			printf("\n");
 			free(line);
@@ -58,16 +61,18 @@ int main(int argc, char **argv, char **env_tmp)
 	}
 	else
 	{
-		while (i == 0 || ft_strncmp(line, "\n", 1))
+		while (i == 0 || ft_strncmp(line, "\0", 1))
 		{	
 			if (i)
 				free(line);
-			//line = add_newline(readline("Minishell: "));
 			line = readline("Minishell: ");
+			if (line && *line)
+				add_history(line);
 			exit_status = minishell(line, env, exit_status);
 			printf("\n");
 			i = 1;
-		}	
+		}
+		rl_clear_history();
 	}
 	free(line);
 	free_the_tab(env);
