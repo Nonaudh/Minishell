@@ -47,7 +47,7 @@ int main(int argc, char **argv, char **env_tmp)
 	}
 	else
 	{
-		while (i == 0 || ft_strncmp(line, "\0", 1))
+		while (line && (i == 0 || ft_strncmp(line, "\0", 1)))
 		{	
 			if (i)
 				free(line);
