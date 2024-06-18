@@ -16,20 +16,6 @@ int	minishell(char *line, char **env, int exit_status)
 	return (0);
 }
 
-char	*add_newline(char *line)
-{
-	char	*new_line;
-	int		line_lenght;
-
-	line_lenght = ft_strlen(line);
-	new_line = malloc(sizeof(char) * (line_lenght + 2));
-	ft_memcpy(new_line, line, line_lenght);
-	new_line[line_lenght] = '\n';
-	new_line[line_lenght + 1] = 0;
-	free(line);
-	return (new_line);
-}
-
 int main(int argc, char **argv, char **env_tmp)
 {
 	char *line = (void *)1;
