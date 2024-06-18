@@ -92,9 +92,12 @@ char	**expand_lex(char **lex, char **env, int exit_status)
 
 	while (lex[i])
 	{
-		if (env_variable_detected(lex[i]))
-			lex[i] = expand_env(lex[i], env, exit_status);
-		lex[i] = unquote(lex[i]);
+		if (i == 0 || lex[i - 1][0] != LESSLESS)
+		{
+			if (env_variable_detected(lex[i]))
+				lex[i] = expand_env(lex[i], env, exit_status);
+			lex[i] = unquote(lex[i]);			
+		}
 		i++;
 	}
 	return (lex);
