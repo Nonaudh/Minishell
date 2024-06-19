@@ -111,7 +111,7 @@ int	here_doc_infile(char **lex, t_commands *cmd, int *x, char **env)
 	cmd->fd_in = open("/tmp/here_doc", O_RDONLY);
 	if (cmd->fd_in == -1)
 		perror("here_doc_infile");
-	if (unlink("/tmp/here_doc"))
+	else if (unlink("/tmp/here_doc"))
 		printf("Error unlink infile\n");
 	(*x)++;
 	return (0);
