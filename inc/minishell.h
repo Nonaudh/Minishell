@@ -60,6 +60,6 @@ int	env_variable_detected(char *str);
 
 
 
-t_commands  *parsing(char **lex, char **env);
+t_commands  *parsing(char **lex, char **env, int exit_status);
 
 # endif

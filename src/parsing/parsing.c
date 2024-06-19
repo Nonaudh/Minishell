@@ -19,8 +19,9 @@ int count_cmd(char **lex)
 int	nb_of_arg(char **lex, int x)
 {
 	int	count = 0;
+	int i = 0;
 
-	while (lex[x][0] != PIPE || lex[x][0] != T_NEWLINE)
+	while (lex[x][0] != PIPE && lex[x][0] != T_NEWLINE)
 	{
 		if (is_a_token(lex[x][0]))
 			x+=2;
@@ -48,15 +49,17 @@ int	set_struct_to_default(t_commands *cmd, char **env, int size)
 	return (0);
 }
 
-int	less_infile(char **lex, t_commands *cmd, int *x)
+int	less_infile(char **lex, t_commands *cmd)
 {
-	(*x)++;
+	//(*x)++;
+	//lex++;
 	if (cmd->fd_in != STDIN_FILENO)
 		close(cmd->fd_in);
-	cmd->fd_in = open(lex[*x], O_RDONLY);
+	cmd->fd_in = open(lex[1], O_RDONLY);
 	if (cmd->fd_in == -1)
-		perror(lex[*x]);
-	(*x)++;
+		perror(lex[1]);
+	//(*x)++;
+	//lex++;
 	return (0);
 }
 
@@ -72,40 +75,39 @@ int	check_quote(char *limiter)
 	return (0);
 }
 
-int	write_here_doc(char *limiter, char **env)
+int	write_here_doc(char **lex, char **env, int exit_status)
 {
 	int		fd_hd;
 	char	*line;
 	int		quote;
-	char	*limiter_copy;
 
-	quote = check_quote(limiter);
-	limiter_copy = unquote(ft_strdup(limiter));
+	quote = check_quote(lex[0]);
+	lex[0] = unquote(lex[0]);
 	fd_hd = open("/tmp/here_doc", O_CREAT | O_RDWR | O_TRUNC, 0644);
 	if (fd_hd == -1)
 		perror("here_doc");
 	line = readline(">");
-	while (line && (ft_strlen(line) != ft_strlen(limiter_copy) 
-			|| !ft_strnstr(line, limiter_copy, ft_strlen(limiter_copy))))
+	while (line && (ft_strlen(line) != ft_strlen(lex[0]) 
+			|| !ft_strnstr(line, lex[0], ft_strlen(lex[0]))))
 	{
 		if (quote && env_variable_detected(line))
-				line = expand_env(line, env, 0);
+				line = expand_env(line, env, exit_status);
 		ft_putendl_fd(line, fd_hd);
 		free(line);
 		line = readline(">");
 	}
 	if (!line)
-		printf("bash: warning: here-document delimited by end-of-file (wanted `%s')", limiter_copy);
+		printf("bash: warning: here-document delimited by end-of-file (wanted `%s')", lex[0]);
 	free(line);
-	free(limiter_copy);
 	close(fd_hd);
 	return (0);
 }
 
-int	here_doc_infile(char **lex, t_commands *cmd, int *x, char **env)
+int	here_doc_infile(char **lex, t_commands *cmd, char **env, int exit_status)
 {
-	(*x)++;
-	write_here_doc(lex[*x], env);
+	//(*x)++;
+	//lex++;
+	write_here_doc(&lex[1], env, exit_status);
 	if (cmd->fd_in != STDIN_FILENO)
 		close(cmd->fd_in);
 	cmd->fd_in = open("/tmp/here_doc", O_RDONLY);
@@ -113,62 +115,71 @@ int	here_doc_infile(char **lex, t_commands *cmd, int *x, char **env)
 		perror("here_doc_infile");
 	else if (unlink("/tmp/here_doc"))
 		printf("Error unlink infile\n");
-	(*x)++;
+	//(*x)++;
+	//lex++;
 	return (0);
 }
 
-int	great_outfile(char **lex, t_commands *cmd, int *x)
+int	great_outfile(char **lex, t_commands *cmd)
 {
-	(*x)++;
+	//(*x)++;
+	//lex++;
 	if (cmd->fd_out != STDOUT_FILENO)
 		close(cmd->fd_out);
-	cmd->fd_out = open(lex[*x], O_CREAT | O_WRONLY | O_TRUNC, 0644);
+	cmd->fd_out = open(lex[1], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (cmd->fd_out == -1)
-		perror(lex[*x]);
-	(*x)++;
+		perror(lex[1]);
+	//(*x)++;
+	//lex++;
 	return (0);
 }
 
-int	great_great_outfile(char **lex, t_commands *cmd, int *x)
+int	great_great_outfile(char **lex, t_commands *cmd)
 {
-	(*x)++;
+	//(*x)++;
+	//lex++;
 	if (cmd->fd_out != STDOUT_FILENO)
 		close(cmd->fd_out);
-	cmd->fd_out = open(lex[*x], O_CREAT | O_APPEND | O_WRONLY, 0644);
+	cmd->fd_out = open(lex[1], O_CREAT | O_APPEND | O_WRONLY, 0644);
 	if (cmd->fd_out == -1)
-		perror(lex[*x]);
-	(*x)++;
+		perror(lex[1]);
+	//(*x)++;
+	//lex++;
 	return (0);
 }
 
-int	is_an_argument(char **lex, t_commands *cmd, int *x)
+int	is_an_argument(char **lex, t_commands *cmd)
 {
 	int	i;
 
 	i = 0;
 	while (cmd->arg[i])
 		i++;
-	cmd->arg[i] = ft_strdup(lex[*x]);
+	cmd->arg[i] = ft_strdup(lex[0]);
 	if (!cmd->arg[i])
 		printf("Error malloc\n");
 	cmd->arg[i + 1] = NULL;
-	(*x)++;
+	//(*x)++;
+	//lex++;
 	return (0);
 }
 
-int	put_in_the_struct(char **lex, t_commands *cmd, int *x, char **env)
+int	put_in_the_struct(char **lex, t_commands *cmd, char **env, int exit_status)
 {
-	if (lex[*x][0] == LESS)
-		less_infile(lex, cmd, x);
-	else if (lex[*x][0] == LESSLESS)
-		here_doc_infile(lex, cmd, x, env);
-	else if (lex[*x][0] == GREAT)
-		great_outfile(lex, cmd, x);
-	else if (lex[*x][0] == GREATGREAT)
-		great_great_outfile(lex, cmd, x);
+	if (lex[0][0] == LESS)
+		less_infile(lex, cmd);
+	else if (lex[0][0] == LESSLESS)
+		here_doc_infile(lex, cmd, env, exit_status);
+	else if (lex[0][0] == GREAT)
+		great_outfile(lex, cmd);
+	else if (lex[0][0] == GREATGREAT)
+		great_great_outfile(lex, cmd);
 	else
-		is_an_argument(lex, cmd, x);
-	return (0);
+	{
+		is_an_argument(lex, cmd);
+		return (1);
+	}
+	return (2);
 }
 
 int	piped(t_commands *cmd_in, t_commands *cmd_out)
@@ -185,10 +196,10 @@ int	piped(t_commands *cmd_in, t_commands *cmd_out)
 		cmd_out->fd_in = pipe_fd[0];
 	else
 		close(pipe_fd[0]);
-	return (0);
+	return (1);
 }
 
-t_commands *fill_the_struct(char **lex, char **env, int size)
+t_commands *fill_the_struct(char **lex, char **env, int size, int exit_status)
 {
 	t_commands *cmd;
 	int	i = 0;
@@ -198,25 +209,27 @@ t_commands *fill_the_struct(char **lex, char **env, int size)
 	set_struct_to_default(cmd, env, size);
 	while (i < size)
 	{
-		cmd[i].arg = malloc(sizeof(nb_of_arg(lex, x)));
+		cmd[i].arg = malloc(sizeof(nb_of_arg(lex, x) + 1));
 		cmd[i].arg[0] = NULL;
 		while (lex[x][0] != PIPE && lex[x][0] != T_NEWLINE)
 		{
-			put_in_the_struct(lex, &cmd[i], &x, env);
+			x += put_in_the_struct(&lex[x], &cmd[i], env, exit_status);
 		}
 		if (lex[x][0] == PIPE)
-			piped(&cmd[i], &cmd[i + 1]);
+			x += piped(&cmd[i], &cmd[i + 1]);
 		i++;
 	}
 	return (cmd);
 }
 
-t_commands  *parsing(char **lex, char **env)
+t_commands  *parsing(char **lex, char **env, int exit_status)
 {
 	t_commands *cmd;
 	int size;
+	char **lex_tmp;
 
+	lex_tmp = lex;
 	size = count_cmd(lex);
-	cmd = fill_the_struct(lex, env, size); 
+	cmd = fill_the_struct(lex, env, size, exit_status); 
 	return (cmd);
 }

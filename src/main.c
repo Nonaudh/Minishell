@@ -11,7 +11,7 @@ int	minishell(char *line, char **env, int exit_status)
 	if (!lex)
 		return (2);
 	print_tab(lex);
-	cmd = parsing(lex, env);
+	cmd = parsing(lex, env, exit_status);
 	free_the_tab(lex);
 	return (0);
 }
