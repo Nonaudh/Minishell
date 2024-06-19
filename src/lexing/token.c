@@ -25,6 +25,8 @@ char	*create_token(t_token token)
 {
 	char	*str;
 	str = malloc(sizeof(char) * 2);
+	if (!str)
+		return (NULL);
 	str[0] = token;
 	str[1] = 0;
 	return (str);

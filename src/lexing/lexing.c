@@ -7,7 +7,7 @@ char	*next_argv(char *line, int *x)
 
 	if (!line[*x])
 		return (NULL);
-	while (line[*x] && line[*x] != '\n' && line[*x] <= 32)
+	while (line[*x] && line[*x] <= 32)
 		(*x)++;
 	if (is_a_char_token(line[*x]))
 	{
@@ -75,7 +75,7 @@ int	count_argc(char *str)
 			if (quote == -1)
 			{
 				printf("Error quote\n");
-				return (-2);
+				return (-42);
 			}
 			i = i + quote + 1;
 			if (str[i + 1] <= 32 || is_a_char_token(str[i + 1]))
@@ -92,7 +92,7 @@ char	**lexing(char *line, char **env, int exit_status)
 	char	**lex;
 
 	argc = count_argc(line) + 3;
-	if (argc == 0)
+	if (argc < 0)
 		return (NULL);
 	lex = fill_lex(line, argc);
 	if (!lex)
