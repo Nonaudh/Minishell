@@ -3,6 +3,7 @@
 int	minishell(char *line, char **env, int exit_status)
 {
 	char **lex;
+	int size;
 	t_commands *cmd;
 
 	if (!line)
@@ -11,9 +12,11 @@ int	minishell(char *line, char **env, int exit_status)
 	if (!lex)
 		return (2);
 	print_tab(lex);
-	cmd = parsing(lex, env, exit_status);
+	size = count_cmd(lex);
+	cmd = parsing(lex, env, size, exit_status);
+	exit_status = execution(cmd, size);
 	free_the_tab(lex);
-	return (0);
+	return (exit_status);
 }
 
 int main(int argc, char **argv, char **env_tmp)

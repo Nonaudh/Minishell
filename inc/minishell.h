@@ -28,7 +28,6 @@ typedef struct s_commands
 	int fd_out;
 } t_commands;
 
-
 int 	main(int argc, char **argv, char **env_tmp);
 int		minishell(char *line, char **env, int exit_status);
 
@@ -60,6 +59,10 @@ int	env_variable_detected(char *str);
 
 
 
-t_commands  *parsing(char **lex, char **env, int exit_status);
+t_commands  *parsing(char **lex, char **env, int size, int exit_status);
+
+int count_cmd(char **lex);
+
+int execution(t_commands *cmd, int size);
 
 # endif

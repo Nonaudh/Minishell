@@ -7,7 +7,7 @@ char	*unquote(char *str)
 	int		quote;
 	char	*lex;
 
-	lex = malloc(sizeof(char) *(ft_strlen(str) + 1));
+	lex = malloc(sizeof(char) * (ft_strlen(str) + 1));
 	if (!lex)
 		return (NULL);
 	while (str[i])

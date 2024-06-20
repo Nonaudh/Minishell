@@ -222,14 +222,12 @@ t_commands *fill_the_struct(char **lex, char **env, int size, int exit_status)
 	return (cmd);
 }
 
-t_commands  *parsing(char **lex, char **env, int exit_status)
+t_commands  *parsing(char **lex, char **env, int size, int exit_status)
 {
 	t_commands *cmd;
-	int size;
 	char **lex_tmp;
 
 	lex_tmp = lex;
-	size = count_cmd(lex);
 	cmd = fill_the_struct(lex, env, size, exit_status); 
 	return (cmd);
 }
