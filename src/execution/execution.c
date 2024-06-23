@@ -1,6 +1,6 @@
 #include "../../inc/minishell.h"
 
-int	close_all_fd_except(t_commands *root, int i, int size)
+int	close_all_fd_except(t_commands *cmd, int i, int size)
 {
 	int	x;
 
@@ -9,23 +9,56 @@ int	close_all_fd_except(t_commands *root, int i, int size)
 	{
 		if (x != i)
 		{
-			if (close(root->fd_in))
-				printf("Error close fd_in\n");
-			if (close(root->fd_out))
-				printf("Error close fd_out\n");			
+			if (cmd[x].fd_in != STDIN_FILENO)
+			{
+				if (close(cmd[x].fd_in))
+					printf("Error close fd_in\n");				
+			}
+			if (cmd[x].fd_out != STDOUT_FILENO)
+			{
+				if (close(cmd[x].fd_out))
+					printf("Error close fd_out\n");
+			}
 		}
 		x++;
 	}
 	return (0);
 }
 
-int	exec_cmd(t_commands *cmd, t_commands *root, int i, int size)
+char	**create_paths_tab(t_commands *cmd)
 {
-	close_all_fd_except(root, i, size);
-	
+	char	**tab;
+	int		i;
+
+	i = 0;
+	tab = ft_split(ft_getenv("PATH", cmd->env), ':');
+	while (tab && tab[i])
+	{
+		tab[i] = ft_strjoin(tab[i], ft_strjoin("/", cmd->arg[0]));
+		i++;
+	}
+	return (tab);
 }
 
-int execute_in_child_process(t_commands *cmd, t_commands *root, int i, int size)
+int	exec_cmd(t_commands *cmd, int i, int size)
+{
+	char **paths;
+	int x = 0;
+
+	close_all_fd_except(cmd, i, size);
+	paths = create_paths_tab(&cmd[i]);
+
+	while (paths[x])
+	{
+		execve(paths[x], cmd[i].arg, cmd[i].env);
+		x++;
+	}
+	free_the_tab(paths);
+	perror(cmd[i].arg[0]);
+	return (0);
+}
+
+int execute_in_child_process(t_commands *cmd, int i, int size)
 {
 	int fork_pid;
 	int exit_status;
@@ -35,17 +68,34 @@ int execute_in_child_process(t_commands *cmd, t_commands *root, int i, int size)
 		exit (EXIT_FAILURE);
 	if (fork_pid == 0)
 	{
-		exit_status = exec_cmd(cmd, root, i, size);
-		return (exit_status);
+		exit_status = exec_cmd(cmd, i, size);
+		exit(exit_status);
 	}
 	return (0);
 }
 
-int execute_command(t_commands *cmd, t_commands *root, int i, int size)
+int execute_command(t_commands *cmd, int i, int size)
 {
 	int exit_status;
+	int tmp_stdin;
+	int tmp_stdout;
 
-	exit_status = execute_in_child_process(cmd, root, i, size);
+	tmp_stdin = dup(STDIN_FILENO);
+	tmp_stdout = dup(STDOUT_FILENO);	
+
+	dup2(cmd[i].fd_in, STDIN_FILENO);
+	dup2(cmd[i].fd_out, STDOUT_FILENO);
+
+	exit_status = execute_in_child_process(cmd, i, size);
+
+	dup2(tmp_stdin, STDIN_FILENO);
+	dup2(tmp_stdout, STDOUT_FILENO);
+}
+
+void	wait_for_all_process(void)
+{
+	while (waitpid(-1, NULL, 0) > 0)
+		;
 }
 
 int execution(t_commands *cmd, int size)
@@ -55,8 +105,13 @@ int execution(t_commands *cmd, int size)
 
 	while(i < size)
 	{
-		exit_status = execute_command(&cmd[i], cmd, i, size);
+		if (cmd[i].fd_in == -1 || cmd[i].fd_out == -1)
+			exit_status = 1;
+		else
+			exit_status = execute_command(cmd, i, size);
 		i++;
 	}
+	close_all_fd_except(cmd, -1, size);
+	wait_for_all_process();
 	return (exit_status);
 }

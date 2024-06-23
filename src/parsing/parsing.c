@@ -7,6 +7,8 @@ int count_cmd(char **lex)
 
 	count = 1;
 	i = 0;
+	if (lex[0][0] == T_NEWLINE)
+		return (0);
 	while (lex[i])
 	{
 		if (lex[i][0] == PIPE)
@@ -41,9 +43,9 @@ int	set_struct_to_default(t_commands *cmd, char **env, int size)
 	i = 0;
 	while (i < size)
 	{
-		cmd->env = env;
-		cmd->fd_in = STDIN_FILENO;
-		cmd->fd_out = STDOUT_FILENO;
+		cmd[i].env = env;
+		cmd[i].fd_in = STDIN_FILENO;
+		cmd[i].fd_out = STDOUT_FILENO;
 		i++;
 	}
 	return (0);
@@ -189,7 +191,7 @@ int	piped(t_commands *cmd_in, t_commands *cmd_out)
 	if (pipe(pipe_fd))
 		printf("Error pipe\n");
 	if (cmd_in->fd_out == STDOUT_FILENO)
-		cmd_in->fd_out = pipe_fd[1];
+		cmd_in->fd_out = pipe_fd[1]; 
 	else
 		close(pipe_fd[1]);
 	if (cmd_out->fd_in == STDIN_FILENO)

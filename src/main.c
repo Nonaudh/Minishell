@@ -13,8 +13,13 @@ int	minishell(char *line, char **env, int exit_status)
 		return (2);
 	print_tab(lex);
 	size = count_cmd(lex);
+	if (size == 0)
+	{
+		free_the_tab(lex);
+		return (0);
+	}
 	cmd = parsing(lex, env, size, exit_status);
-	exit_status = execution(cmd, size);
+	exit_status = execution(cmd, size);	
 	free_the_tab(lex);
 	return (exit_status);
 }

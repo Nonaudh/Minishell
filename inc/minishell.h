@@ -10,6 +10,9 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include <sys/types.h>
+#include <sys/wait.h>
+
 typedef enum e_token
 {
 	GREAT = 1,
@@ -64,5 +67,6 @@ t_commands  *parsing(char **lex, char **env, int size, int exit_status);
 int count_cmd(char **lex);
 
 int execution(t_commands *cmd, int size);
+char	*ft_getenv(char *str, char **env);
 
 # endif
