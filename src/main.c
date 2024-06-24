@@ -11,7 +11,7 @@ int	minishell(char *line, char **env, int exit_status)
 	lex = lexing(line, env, exit_status);
 	if (!lex)
 		return (2);
-	print_tab(lex);
+	//print_tab(lex);
 	size = count_cmd(lex);
 	if (size == 0)
 	{
@@ -21,6 +21,7 @@ int	minishell(char *line, char **env, int exit_status)
 	cmd = parsing(lex, env, size, exit_status);
 	exit_status = execution(cmd, size);	
 	free_the_tab(lex);
+	free_struct_cmd(cmd, size);
 	return (exit_status);
 }
 
@@ -48,7 +49,6 @@ int main(int argc, char **argv, char **env_tmp)
 			printf("%s", line);
 			printf("\n");
 			exit_status = minishell(line, env, exit_status);
-			printf("\n");
 			free(line);
 			i++;	
 		}
@@ -63,7 +63,6 @@ int main(int argc, char **argv, char **env_tmp)
 			if (line && *line)
 				add_history(line);
 			exit_status = minishell(line, env, exit_status);
-			printf("\n");
 			i = 1;
 		}
 		rl_clear_history();

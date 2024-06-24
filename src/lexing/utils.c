@@ -25,6 +25,19 @@ void	free_the_tab(char **tab)
 	}
 	free(tab);
 }
+void	free_struct_cmd(t_commands *cmd, int size)
+{
+	int	i;
+
+	i = 0;
+	while (i < size)
+	{
+		free_the_tab(cmd[i].arg);
+		i++;
+	}
+	free(cmd);
+}
+
 
 char	**ft_str_tab_dup(char **tab1)
 {

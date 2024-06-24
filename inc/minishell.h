@@ -13,6 +13,9 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <dirent.h>
+#include <errno.h>
+
 typedef enum e_token
 {
 	GREAT = 1,
@@ -68,5 +71,6 @@ int count_cmd(char **lex);
 
 int execution(t_commands *cmd, int size);
 char	*ft_getenv(char *str, char **env);
+void	free_struct_cmd(t_commands *cmd, int size);
 
 # endif

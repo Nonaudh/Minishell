@@ -40,21 +40,45 @@ char	**create_paths_tab(t_commands *cmd)
 	return (tab);
 }
 
+int	is_a_directory(t_commands *cmd, int i, int size)
+{
+	DIR *dir = NULL;
+
+	dir = opendir(cmd[i].arg[0]);
+	if (dir || errno == EACCES)
+	{
+		printf("bash: %s: Is a directory\n", cmd[i].arg[0]);
+		closedir(dir);
+		return (1);
+	}
+	ft_putstr_fd("bash: ", 2);
+	perror(cmd[i].arg[0]);
+	return (0);
+}
+
 int	exec_cmd(t_commands *cmd, int i, int size)
 {
 	char **paths;
 	int x = 0;
 
 	close_all_fd_except(cmd, i, size);
-	paths = create_paths_tab(&cmd[i]);
-
-	while (paths[x])
+	if (strchr(cmd[i].arg[0], '/') && access(cmd[i].arg[0], X_OK))
 	{
-		execve(paths[x], cmd[i].arg, cmd[i].env);
-		x++;
+		is_a_directory(cmd, i, size);
 	}
-	free_the_tab(paths);
-	perror(cmd[i].arg[0]);
+	else
+	{
+		execve(cmd[i].arg[0], cmd[i].arg, cmd[i].env);
+		paths = create_paths_tab(&cmd[i]);
+		while (paths[x])
+		{
+			execve(paths[x], cmd[i].arg, cmd[i].env);
+			x++;
+		}
+		printf("%s: command not found\n", cmd[i].arg[0]);
+		free_the_tab(paths);
+	}
+	free_struct_cmd(cmd, size);
 	return (0);
 }
 
