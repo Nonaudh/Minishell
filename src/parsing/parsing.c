@@ -223,9 +223,7 @@ t_commands *fill_the_struct(char **lex, char **env, int size, int exit_status)
 t_commands  *parsing(char **lex, char **env, int size, int exit_status)
 {
 	t_commands *cmd;
-	char **lex_tmp;
-
-	lex_tmp = lex;
+	
 	cmd = fill_the_struct(lex, env, size, exit_status); 
 	return (cmd);
 }

@@ -19,7 +19,7 @@ int	minishell(char *line, char **env, int exit_status)
 		return (0);
 	}
 	cmd = parsing(lex, env, size, exit_status);
-	exit_status = execution(cmd, size);	
+	exit_status = execution(cmd, size);
 	free_the_tab(lex);
 	free_struct_cmd(cmd, size);
 	return (exit_status);
