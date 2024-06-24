@@ -69,7 +69,7 @@ int	less_infile(char **lex, t_commands *cmd)
 	if (cmd->fd_in == -1)
 	{
 		perror(lex[1]);
-		return(until_pipe_or_newline(&lex[1]));
+		return(until_pipe_or_newline(lex));
 	}
 	return (2);
 }
@@ -124,7 +124,7 @@ int	here_doc_infile(char **lex, t_commands *cmd, char **env, int exit_status)
 		perror("here_doc_infile");
 	else if (unlink("/tmp/here_doc"))
 		printf("Error unlink infile\n");
-	return (0);
+	return (2);
 }
 
 int	great_outfile(char **lex, t_commands *cmd)
@@ -133,8 +133,11 @@ int	great_outfile(char **lex, t_commands *cmd)
 		close(cmd->fd_out);
 	cmd->fd_out = open(lex[1], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (cmd->fd_out == -1)
+	{
 		perror(lex[1]);
-	return (0);
+		return(until_pipe_or_newline(lex));
+	}
+	return (2);
 }
 
 int	great_great_outfile(char **lex, t_commands *cmd)
@@ -143,8 +146,11 @@ int	great_great_outfile(char **lex, t_commands *cmd)
 		close(cmd->fd_out);
 	cmd->fd_out = open(lex[1], O_CREAT | O_APPEND | O_WRONLY, 0644);
 	if (cmd->fd_out == -1)
+	{
 		perror(lex[1]);
-	return (0);
+		return(until_pipe_or_newline(lex));
+	}
+	return (2);
 }
 
 int	is_an_argument(char **lex, t_commands *cmd)
@@ -158,25 +164,20 @@ int	is_an_argument(char **lex, t_commands *cmd)
 	if (!cmd->arg[i])
 		printf("Error malloc\n");
 	cmd->arg[i + 1] = NULL;
-	return (0);
+	return (1);
 }
 
 int	put_in_the_struct(char **lex, t_commands *cmd, char **env, int exit_status)
 {
 	if (lex[0][0] == LESS)
 		return (less_infile(lex, cmd));
-	else if (lex[0][0] == LESSLESS)
-		here_doc_infile(lex, cmd, env, exit_status);
-	else if (lex[0][0] == GREAT)
-		great_outfile(lex, cmd);
-	else if (lex[0][0] == GREATGREAT)
-		great_great_outfile(lex, cmd);
-	else
-	{
-		is_an_argument(lex, cmd);
-		return (1);
-	}
-	return (2);
+	if (lex[0][0] == LESSLESS)
+		return (here_doc_infile(lex, cmd, env, exit_status));
+	if (lex[0][0] == GREAT)
+		return (great_outfile(lex, cmd));
+	if (lex[0][0] == GREATGREAT)
+		return (great_great_outfile(lex, cmd));
+	return (is_an_argument(lex, cmd));
 }
 
 int	piped(t_commands *cmd_in, t_commands *cmd_out)
@@ -206,7 +207,7 @@ t_commands *fill_the_struct(char **lex, char **env, int size, int exit_status)
 	set_struct_to_default(cmd, env, size);
 	while (lex[x][0] != T_NEWLINE)
 	{
-		cmd[i].arg = malloc(sizeof(nb_of_arg(lex, x) + 1));
+		cmd[i].arg = malloc(sizeof(char *) * (nb_of_arg(lex, x) + 1));
 		cmd[i].arg[0] = NULL;
 		while (lex[x][0] != PIPE && lex[x][0] != T_NEWLINE)
 		{

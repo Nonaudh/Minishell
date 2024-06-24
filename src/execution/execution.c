@@ -9,15 +9,15 @@ int	close_all_fd_except(t_commands *cmd, int i, int size)
 	{
 		if (x != i)
 		{
-			if (cmd[x].fd_in != STDIN_FILENO)// || cmd[x].fd_in != -1)
+			if (cmd[x].fd_in != STDIN_FILENO && cmd[x].fd_in != -1)
 			{
 				if (close(cmd[x].fd_in))
-					printf("Error close fd_in\n");				
+					perror("fd_in");				
 			}
-			if (cmd[x].fd_out != STDOUT_FILENO)// || cmd[x].fd_out != -1)
+			if (cmd[x].fd_out != STDOUT_FILENO && cmd[x].fd_out != -1)
 			{
 				if (close(cmd[x].fd_out))
-					printf("Error close fd_out\n");
+					perror("fd_out");
 			}
 		}
 		x++;
