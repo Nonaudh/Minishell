@@ -51,18 +51,27 @@ int	set_struct_to_default(t_commands *cmd, char **env, int size)
 	return (0);
 }
 
+int	until_pipe_or_newline(char **lex)
+{
+	int	x;
+
+	x = 0;
+	while (lex[x] && lex[x][0] != PIPE && lex[x][0] != T_NEWLINE)
+		x++;
+	return (x);
+}
+
 int	less_infile(char **lex, t_commands *cmd)
 {
-	//(*x)++;
-	//lex++;
 	if (cmd->fd_in != STDIN_FILENO)
 		close(cmd->fd_in);
 	cmd->fd_in = open(lex[1], O_RDONLY);
 	if (cmd->fd_in == -1)
+	{
 		perror(lex[1]);
-	//(*x)++;
-	//lex++;
-	return (0);
+		return(until_pipe_or_newline(&lex[1]));
+	}
+	return (2);
 }
 
 int	check_quote(char *limiter)
@@ -107,8 +116,6 @@ int	write_here_doc(char **lex, char **env, int exit_status)
 
 int	here_doc_infile(char **lex, t_commands *cmd, char **env, int exit_status)
 {
-	//(*x)++;
-	//lex++;
 	write_here_doc(&lex[1], env, exit_status);
 	if (cmd->fd_in != STDIN_FILENO)
 		close(cmd->fd_in);
@@ -117,36 +124,26 @@ int	here_doc_infile(char **lex, t_commands *cmd, char **env, int exit_status)
 		perror("here_doc_infile");
 	else if (unlink("/tmp/here_doc"))
 		printf("Error unlink infile\n");
-	//(*x)++;
-	//lex++;
 	return (0);
 }
 
 int	great_outfile(char **lex, t_commands *cmd)
 {
-	//(*x)++;
-	//lex++;
 	if (cmd->fd_out != STDOUT_FILENO)
 		close(cmd->fd_out);
 	cmd->fd_out = open(lex[1], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (cmd->fd_out == -1)
 		perror(lex[1]);
-	//(*x)++;
-	//lex++;
 	return (0);
 }
 
 int	great_great_outfile(char **lex, t_commands *cmd)
 {
-	//(*x)++;
-	//lex++;
 	if (cmd->fd_out != STDOUT_FILENO)
 		close(cmd->fd_out);
 	cmd->fd_out = open(lex[1], O_CREAT | O_APPEND | O_WRONLY, 0644);
 	if (cmd->fd_out == -1)
 		perror(lex[1]);
-	//(*x)++;
-	//lex++;
 	return (0);
 }
 
@@ -161,15 +158,13 @@ int	is_an_argument(char **lex, t_commands *cmd)
 	if (!cmd->arg[i])
 		printf("Error malloc\n");
 	cmd->arg[i + 1] = NULL;
-	//(*x)++;
-	//lex++;
 	return (0);
 }
 
 int	put_in_the_struct(char **lex, t_commands *cmd, char **env, int exit_status)
 {
 	if (lex[0][0] == LESS)
-		less_infile(lex, cmd);
+		return (less_infile(lex, cmd));
 	else if (lex[0][0] == LESSLESS)
 		here_doc_infile(lex, cmd, env, exit_status);
 	else if (lex[0][0] == GREAT)
@@ -209,7 +204,7 @@ t_commands *fill_the_struct(char **lex, char **env, int size, int exit_status)
 
 	cmd = malloc(sizeof(t_commands) * size);
 	set_struct_to_default(cmd, env, size);
-	while (i < size)
+	while (lex[x][0] != T_NEWLINE)
 	{
 		cmd[i].arg = malloc(sizeof(nb_of_arg(lex, x) + 1));
 		cmd[i].arg[0] = NULL;
