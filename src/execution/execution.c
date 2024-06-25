@@ -62,13 +62,13 @@ int	exec_cmd(t_commands *cmd, int i, int size)
 	int x = 0;
 
 	close_all_fd_except(cmd, i, size);
-	if (strchr(cmd[i].arg[0], '/') && access(cmd[i].arg[0], X_OK))
+	execve(cmd[i].arg[0], cmd[i].arg, cmd[i].env);
+	if (strchr(cmd[i].arg[0], '/'))
 	{
 		is_a_directory(cmd, i, size);
 	}
 	else
 	{
-		execve(cmd[i].arg[0], cmd[i].arg, cmd[i].env);
 		paths = create_paths_tab(&cmd[i]);
 		while (paths[x])
 		{
