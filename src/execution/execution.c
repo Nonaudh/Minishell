@@ -105,7 +105,7 @@ int execute_command(t_commands *cmd, int i, int size)
 	int tmp_stdout;
 
 	tmp_stdin = dup(STDIN_FILENO);
-	tmp_stdout = dup(STDOUT_FILENO);	
+	tmp_stdout = dup(STDOUT_FILENO);
 
 	dup2(cmd[i].fd_in, STDIN_FILENO);
 	dup2(cmd[i].fd_out, STDOUT_FILENO);
@@ -114,6 +114,7 @@ int execute_command(t_commands *cmd, int i, int size)
 
 	dup2(tmp_stdin, STDIN_FILENO);
 	dup2(tmp_stdout, STDOUT_FILENO);
+	return (0);
 }
 
 void	wait_for_all_process(void)
