@@ -98,7 +98,6 @@ char	**lexing(char *line, char **env, int exit_status)
 	if (!lex)
 		return (NULL);
 	if (check_syntax(lex))
-	
 	{
 		free_the_tab(lex);
 		return (NULL);

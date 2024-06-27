@@ -36,26 +36,22 @@ char	*unquote(char *str)
 	return (lex);
 }
 
-char	*add_env_value(char *str, int size, char **env, int exit_status)
+char	*add_env_value(char *little, char **env, int exit_status)
 {
 	char	*env_value;
 	int x = 0;
-	char	*little;
-	int		little_len;
 
-	little = ft_substr(str, 0, size);
-	little_len = ft_strlen(little);
-	if (little_len == 1 && little[0] == '?')
+	if (!little)
+		return(NULL);
+	if (ft_strlen(little) == 1 && little[0] == '?')
 	{
 		free(little);
 		return(ft_itoa(exit_status));
 	}
-	while (env[x] && (little_len  < ft_strchr_index(env[x], '=')
-		|| !ft_strnstr(env[x], little, ft_strchr_index(env[x], '='))))
-		x++;
+	env_value = ft_strdup(ft_getenv(little, env));
 	free(little);
-	if (env[x])
-		return (ft_substr(env[x], little_len + 1, ft_strlen(env[x]) - (little_len + 1))); //env[x] + little_len + 1 );
+	if (env_value)
+		return (env_value);
 	return (ft_strdup("\0"));
 }
 
@@ -77,9 +73,10 @@ char	*expand_env(char *str, char **env, int exit_status)
 		{
 			i++;
 			start = i;
-			while (ft_isprint(str[i]) && str[i] != '\'' && str[i] != '\"' && str[i - 1] != '?')
+			while (ft_isprint(str[i]) && str[i] != '\'' && str[i] != '\"' && str[i - 1] != '?' && str[i] != '$')
 				i++;
-			lex = ft_strjoin_dup_frees(lex, add_env_value(str + start, i - start, env, exit_status));
+			lex = ft_strjoin_dup_frees(lex, add_env_value
+			(ft_substr(str, start, i - start), env, exit_status));
 		}
 	}
 	free(str);

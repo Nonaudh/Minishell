@@ -49,7 +49,10 @@ int	is_a_directory(t_commands *cmd, int i, int size)
 	{
 		printf("bash: %s: Is a directory\n", cmd[i].arg[0]);
 		closedir(dir);
-		return (1);
+		close(cmd[i].fd_in);
+		close(cmd[i].fd_out);
+		free_struct_cmd(cmd, size);
+		exit(126);
 	}
 	ft_putstr_fd("bash: ", 2);
 	perror(cmd[i].arg[0]);
@@ -64,37 +67,34 @@ int	exec_cmd(t_commands *cmd, int i, int size)
 	close_all_fd_except(cmd, i, size);
 	execve(cmd[i].arg[0], cmd[i].arg, cmd[i].env);
 	if (strchr(cmd[i].arg[0], '/'))
-	{
 		is_a_directory(cmd, i, size);
-	}
 	else
 	{
 		paths = create_paths_tab(&cmd[i]);
-		while (paths[x])
+		while (paths && paths[x])
 		{
 			execve(paths[x], cmd[i].arg, cmd[i].env);
 			x++;
 		}
 		printf("%s: command not found\n", cmd[i].arg[0]);
-		free_the_tab(paths);
+		if (paths)
+			free_the_tab(paths);
 	}
+	close(cmd[i].fd_in);
+	close(cmd[i].fd_out);
 	free_struct_cmd(cmd, size);
-	return (0);
+	exit(127);
 }
 
 int execute_in_child_process(t_commands *cmd, int i, int size)
 {
 	int fork_pid;
-	int exit_status;
 
 	fork_pid = fork();
 	if (fork_pid < 0)
 		exit (EXIT_FAILURE);
 	if (fork_pid == 0)
-	{
-		exit_status = exec_cmd(cmd, i, size);
-		exit(exit_status);
-	}
+		exec_cmd(cmd, i, size);
 	return (0);
 }
 
@@ -110,17 +110,24 @@ int execute_command(t_commands *cmd, int i, int size)
 	dup2(cmd[i].fd_in, STDIN_FILENO);
 	dup2(cmd[i].fd_out, STDOUT_FILENO);
 
-	exit_status = execute_in_child_process(cmd, i, size);
+	execute_in_child_process(cmd, i, size);
 
 	dup2(tmp_stdin, STDIN_FILENO);
 	dup2(tmp_stdout, STDOUT_FILENO);
+	close(tmp_stdin);
+	close (tmp_stdout);
 	return (0);
 }
 
-void	wait_for_all_process(void)
+int	wait_for_all_process(void)
 {
-	while (waitpid(-1, NULL, 0) > 0)
+	int status;
+
+	while (waitpid(-1, &status, 0) > 0)
 		;
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+	return (1);
 }
 
 int execution(t_commands *cmd, int size)
@@ -133,10 +140,10 @@ int execution(t_commands *cmd, int size)
 		if (cmd[i].fd_in == -1 || cmd[i].fd_out == -1)
 			exit_status = 1;
 		else
-			exit_status = execute_command(cmd, i, size);
+			execute_command(cmd, i, size);
 		i++;
 	}
 	close_all_fd_except(cmd, -1, size);
-	wait_for_all_process();
+	exit_status = wait_for_all_process();
 	return (exit_status);
 }

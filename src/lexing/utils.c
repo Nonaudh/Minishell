@@ -81,6 +81,13 @@ char	*ft_strjoin_dup_frees(char const *s1, char const *s2)
 {
 	char	*str;
 
+	if (!s1 && !s2)
+		return (NULL);
+	if (s1 && !s2)
+	{
+		str = ft_strdup(s1);
+		free ((char *)s1);
+	}
 	if (!s1 && s2)
 	{
 		str = ft_strdup(s2);
@@ -90,7 +97,7 @@ char	*ft_strjoin_dup_frees(char const *s1, char const *s2)
 	{
 		str = ft_strjoin(s1, s2);
 		free((char *)s2);
-		free((char *)s1);		
+		free((char *)s1);
 	}
 	return (str);
 }

@@ -49,7 +49,7 @@ int		check_syntax(char **lex);
 
 char	**expand_lex(char **lex, char **env, int exit_status);
 char	*expand_env(char *str, char **env, int exit_status);
-char	*add_env_value(char *str, int size, char **env, int exit_status);
+char	*add_env_value(char *little, char **env, int exit_status);
 char	*unquote(char *str);
 
 void	print_tab(char **tab);
