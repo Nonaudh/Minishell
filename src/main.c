@@ -25,6 +25,12 @@ int	minishell(char *line, char **env, int exit_status)
 	return (exit_status);
 }
 
+void	handle_sigstp(int sig)
+{
+	
+	return ;
+}
+
 int main(int argc, char **argv, char **env_tmp)
 {
 	char *line = (void *)1;
@@ -32,6 +38,14 @@ int main(int argc, char **argv, char **env_tmp)
 	int i = 0;
 	int fd;
 	int	exit_status = 1;
+	sig = 0;
+
+	struct sigaction sa;
+	ft_bzero(&sa, sizeof(struct sigaction));
+	sa.sa_handler = &handle_sigstp;
+	sigaction(SIGINT, &sa, NULL);
+	//sa.sa
+	
 
 	fd = open("cmd", O_RDONLY);
 	if (fd == -1)

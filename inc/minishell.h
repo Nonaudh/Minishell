@@ -7,6 +7,7 @@
 #include <fcntl.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -15,6 +16,10 @@
 
 #include <dirent.h>
 #include <errno.h>
+
+#include <signal.h>
+
+int	sig;
 
 typedef enum e_token
 {
