@@ -22,13 +22,18 @@ int	minishell(char *line, char **env, int exit_status)
 	exit_status = execution(cmd, size);
 	free_the_tab(lex);
 	free_struct_cmd(cmd, size);
+	if (sig == 1)
+		return (69);
 	return (exit_status);
 }
 
 void	handle_sigstp(int sig)
 {
-	
-	return ;
+	sigset_t	sigset;
+
+	sigemptyset(&sigset);
+	sigaddset(&sigset, sig);
+	sig = 1;
 }
 
 int main(int argc, char **argv, char **env_tmp)
@@ -74,6 +79,13 @@ int main(int argc, char **argv, char **env_tmp)
 			if (i)
 				free(line);
 			line = readline("Minishell: ");
+			if (sig == 1)
+			{
+					//rl_on_new_line ();
+					ft_putendl_fd("SIGNAL", 2);
+					sig = 0;
+			}
+			
 			if (line && *line)
 				add_history(line);
 			exit_status = minishell(line, env, exit_status);
