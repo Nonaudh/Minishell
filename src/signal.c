@@ -7,12 +7,11 @@ void	sigint_handler(int signal)
 	if (signal == SIGINT)
 	{
 		sig_flag = 1;
+		ft_putstr_fd("\n", 1);
 		rl_on_new_line();
-    	rl_replace_line("", 0);
-
-		rl_replace_line("\nB4SH : ", 0);
+		rl_replace_line("", 0);
 		rl_redisplay();
-	}	
+	}
 }
 
 void	set_signal_action(void)
@@ -32,6 +31,11 @@ int main(int argc, char **argv, char **env)
 	while (1)
 	{
 		line = readline("B4SH : ");
+		if (!line)
+		{
+			ft_putendl_fd("exit", 1);
+			exit(1);
+		}
 		printf("%s\n", line);
 		free(line);
 		if (sig_flag)
