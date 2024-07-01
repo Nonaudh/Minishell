@@ -1,10 +1,30 @@
 #include "../inc/minishell.h"
 
+volatile int	sig = 0;
+
+void	handle_sigstp_mini(int signal)
+{
+	if (signal == SIGINT)
+	{
+		sig = 1;
+		// ft_putstr_fd("\n", 1);
+		// rl_on_new_line();
+		// rl_replace_line("", 0);
+		// rl_redisplay();
+		return ;
+	}
+}
+
 int	minishell(char *line, char **env, int exit_status)
 {
 	char **lex;
 	int size;
 	t_commands *cmd;
+	
+	struct sigaction sa;
+	ft_bzero(&sa, sizeof(struct sigaction));
+	sa.sa_handler = &handle_sigstp_mini;
+	sigaction(SIGINT, &sa, NULL);
 
 	if (!line)
 		return (1);
@@ -23,17 +43,23 @@ int	minishell(char *line, char **env, int exit_status)
 	free_the_tab(lex);
 	free_struct_cmd(cmd, size);
 	if (sig == 1)
-		return (69);
+	{
+		sig = 0;
+		exit_status = 69;
+	}
 	return (exit_status);
 }
 
-void	handle_sigstp(int sig)
+void	handle_sigstp(int signal)
 {
-	sigset_t	sigset;
-
-	sigemptyset(&sigset);
-	sigaddset(&sigset, sig);
-	sig = 1;
+	if (signal == SIGINT)
+	{
+		sig = 1;
+		ft_putstr_fd("\n", 1);
+		rl_on_new_line();
+		rl_replace_line("", 0);
+		rl_redisplay();
+	}
 }
 
 int main(int argc, char **argv, char **env_tmp)
@@ -48,7 +74,6 @@ int main(int argc, char **argv, char **env_tmp)
 	struct sigaction sa;
 	ft_bzero(&sa, sizeof(struct sigaction));
 	sa.sa_handler = &handle_sigstp;
-	sigaction(SIGINT, &sa, NULL);
 	//sa.sa
 	
 
@@ -74,21 +99,21 @@ int main(int argc, char **argv, char **env_tmp)
 	}
 	else
 	{
-		while (line && (i == 0 || ft_strncmp(line, "\0", 1)))
+		while (line)
 		{	
+			sigaction(SIGINT, &sa, NULL);
 			if (i)
 				free(line);
 			line = readline("Minishell: ");
-			if (sig == 1)
+			if (sig)
 			{
-					//rl_on_new_line ();
-					ft_putendl_fd("SIGNAL", 2);
-					sig = 0;
+				exit_status = 42;
+				sig = 0;
 			}
-			
 			if (line && *line)
 				add_history(line);
 			exit_status = minishell(line, env, exit_status);
+			
 			i = 1;
 		}
 		rl_clear_history();

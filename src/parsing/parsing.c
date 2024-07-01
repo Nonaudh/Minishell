@@ -108,7 +108,7 @@ int	write_here_doc(char **lex, char **env, int exit_status)
 		line = readline(">");
 	}
 	if (!line)
-		printf("bash: warning: here-document delimited by end-of-file (wanted `%s')", lex[0]);
+		printf("bash: warning: here-document delimited by end-of-file (wanted `%s')\n", lex[0]);
 	free(line);
 	close(fd_hd);
 	return (0);

@@ -19,8 +19,6 @@
 
 #include <signal.h>
 
-int	sig;
-
 typedef enum e_token
 {
 	GREAT = 1,
