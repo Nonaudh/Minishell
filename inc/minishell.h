@@ -19,6 +19,8 @@
 
 #include <signal.h>
 
+extern int g_sig_flag;
+
 typedef enum e_token
 {
 	GREAT = 1,

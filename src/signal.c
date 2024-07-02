@@ -1,7 +1,5 @@
 #include "../inc/minishell.h"
 
-volatile int sig_flag = 0;
-
 void	sigint_handler(int signal)
 {
 	if (signal == SIGINT)

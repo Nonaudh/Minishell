@@ -1,12 +1,12 @@
 #include "../inc/minishell.h"
 
-volatile int	sig = 0;
+int	g_sig_flag = 0;
 
 void	handle_sigstp_mini(int signal)
 {
 	if (signal == SIGINT)
 	{
-		sig = 1;
+		g_sig_flag = 1;
 		// ft_putstr_fd("\n", 1);
 		// rl_on_new_line();
 		// rl_replace_line("", 0);
@@ -42,9 +42,9 @@ int	minishell(char *line, char **env, int exit_status)
 	exit_status = execution(cmd, size);
 	free_the_tab(lex);
 	free_struct_cmd(cmd, size);
-	if (sig == 1)
+	if (g_sig_flag == 1)
 	{
-		sig = 0;
+		g_sig_flag = 0;
 		exit_status = 69;
 	}
 	return (exit_status);
@@ -54,7 +54,7 @@ void	handle_sigstp(int signal)
 {
 	if (signal == SIGINT)
 	{
-		sig = 1;
+		g_sig_flag = 1;
 		ft_putstr_fd("\n", 1);
 		rl_on_new_line();
 		rl_replace_line("", 0);
@@ -69,13 +69,11 @@ int main(int argc, char **argv, char **env_tmp)
 	int i = 0;
 	int fd;
 	int	exit_status = 1;
-	sig = 0;
+	g_sig_flag = 0;
 
 	struct sigaction sa;
 	ft_bzero(&sa, sizeof(struct sigaction));
 	sa.sa_handler = &handle_sigstp;
-	//sa.sa
-	
 
 	fd = open("cmd", O_RDONLY);
 	if (fd == -1)
@@ -105,10 +103,10 @@ int main(int argc, char **argv, char **env_tmp)
 			if (i)
 				free(line);
 			line = readline("Minishell: ");
-			if (sig)
+			if (g_sig_flag)
 			{
 				exit_status = 42;
-				sig = 0;
+				g_sig_flag = 0;
 			}
 			if (line && *line)
 				add_history(line);
