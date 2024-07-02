@@ -46,6 +46,7 @@ int	minishell(char *line, char **env, int exit_status)
 	{
 		g_sig_flag = 0;
 		exit_status = 69;
+		ft_putstr_fd("\n", 1);
 	}
 	return (exit_status);
 }
