@@ -203,7 +203,7 @@ t_commands *fill_the_struct(char **lex, char **env, int size, int exit_status)
 	int	i = 0;
 	int	x = 0;
 
-	cmd = malloc(sizeof(t_commands) * size);
+	cmd = malloc(sizeof(t_commands) * (size + 1));
 	set_struct_to_default(cmd, env, size);
 	while (lex[x][0] != T_NEWLINE)
 	{
@@ -225,6 +225,5 @@ t_commands  *parsing(char **lex, char **env, int size, int exit_status)
 	t_commands *cmd;
 	
 	cmd = fill_the_struct(lex, env, size, exit_status);
-	return (NULL);
 	return (cmd);
 }

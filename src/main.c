@@ -7,11 +7,19 @@ void	handle_sigstp_mini(int signal)
 	if (signal == SIGINT)
 	{
 		g_sig_flag = 1;
-		// ft_putstr_fd("\n", 1);
-		// rl_on_new_line();
-		// rl_replace_line("", 0);
-		// rl_redisplay();
-		return ;
+		ft_putstr_fd("\n", 1);
+	}
+}
+
+void	print_cmd(t_commands *cmd)
+{
+	int i = 0;
+	
+	while (cmd)
+	{
+		cmd++;
+		i++;
+		print_tab(cmd->arg);
 	}
 }
 
@@ -27,7 +35,7 @@ int	minishell(char *line, char **env, int exit_status)
 	sigaction(SIGINT, &sa, NULL);
 
 	if (!line)
-		return (1);
+		return (exit_status);
 	lex = lexing(line, env, exit_status);
 	if (!lex)
 		return (2);
@@ -46,7 +54,6 @@ int	minishell(char *line, char **env, int exit_status)
 	{
 		g_sig_flag = 0;
 		exit_status = 69;
-		ft_putstr_fd("\n", 1);
 	}
 	return (exit_status);
 }
@@ -63,61 +70,42 @@ void	handle_sigstp(int signal)
 	}
 }
 
+void	handle_sig_main(void)
+{
+	struct sigaction sa;
+	
+	ft_bzero(&sa, sizeof(struct sigaction));
+	sa.sa_handler = &handle_sigstp;
+	sigaction(SIGINT, &sa, NULL);
+}
+
 int main(int argc, char **argv, char **env_tmp)
 {
 	char *line = (void *)1;
 	char **env;
 	int i = 0;
-	int fd;
 	int	exit_status = 1;
-	g_sig_flag = 0;
 
-	struct sigaction sa;
-	ft_bzero(&sa, sizeof(struct sigaction));
-	sa.sa_handler = &handle_sigstp;
-
-	fd = open("cmd", O_RDONLY);
-	if (fd == -1)
-		return (1);
+	
 	env = ft_str_tab_dup(env_tmp);
 	if (!env)
 		return (1);
-	if (argc == 1)
+	while (line)
 	{
-			while (line && i < 10)
-		{
-			line = get_next_line(fd);
-			if (line)
-				line[ft_strlen(line) - 1] = 0;
-			printf("%s", line);
-			printf("\n");
-			exit_status = minishell(line, env, exit_status);
+		handle_sig_main();
+		if (line != (void *)1)
 			free(line);
-			i++;	
+		line = readline("Minishell: ");
+		if (g_sig_flag)
+		{
+			exit_status = 42;
+			g_sig_flag = 0;
 		}
+		if (line && *line)
+			add_history(line);
+		exit_status = minishell(line, env, exit_status);
 	}
-	else
-	{
-		while (line)
-		{	
-			sigaction(SIGINT, &sa, NULL);
-			if (i)
-				free(line);
-			line = readline("Minishell: ");
-			if (g_sig_flag)
-			{
-				exit_status = 42;
-				g_sig_flag = 0;
-			}
-			if (line && *line)
-				add_history(line);
-			exit_status = minishell(line, env, exit_status);
-			
-			i = 1;
-		}
-		rl_clear_history();
-	}
-	free(line);
+	rl_clear_history();
 	free_the_tab(env);
 	return (exit_status);
 }
