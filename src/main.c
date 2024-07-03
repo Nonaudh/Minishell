@@ -11,18 +11,6 @@ void	handle_sigstp_mini(int signal)
 	}
 }
 
-void	print_cmd(t_commands *cmd)
-{
-	int i = 0;
-	
-	while (cmd)
-	{
-		cmd++;
-		i++;
-		print_tab(cmd->arg);
-	}
-}
-
 int	minishell(char *line, char **env, int exit_status)
 {
 	char **lex;

@@ -46,13 +46,13 @@ int main(int argc, char **argv, char **env)
 		free(line);
 		line = readline(">");
 	}
-	if (!line)
+	if (!line && !sig_flag)
 		printf("bash: warning: here-document delimited by end-of-file (wanted `%s')\n", argv[1]);
 	free(line);
 	close(fd_hd);
-	dup2(std_in, STDIN_FILENO);
-	line = get_next_line(0);
-	printf("sig; %s\n", line);
+	if (sig_flag)
+		dup2(std_in, STDIN_FILENO);
+	close(std_in);
 	return (0);
 }
 
