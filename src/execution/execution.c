@@ -28,13 +28,23 @@ int	close_all_fd_except(t_commands *cmd, int i, int size)
 char	**create_paths_tab(t_commands *cmd)
 {
 	char	**tab;
+	char	*cmd_path;
+	char	*new_tab;
 	int		i;
 
 	i = 0;
 	tab = ft_split(ft_getenv("PATH", cmd->env), ':');
 	while (tab && tab[i])
 	{
-		tab[i] = ft_strjoin(tab[i], ft_strjoin("/", cmd->arg[0]));
+		cmd_path = ft_strjoin("/", cmd->arg[0]);
+		if (!cmd_path)
+			return (NULL);
+		new_tab = ft_strjoin(tab[i], cmd_path);
+		if (!new_tab)
+			return (NULL);
+		free(cmd_path);
+		free(tab[i]);
+		tab[i] = new_tab;
 		i++;
 	}
 	return (tab);
@@ -51,6 +61,7 @@ int	is_a_directory(t_commands *cmd, int i, int size)
 		closedir(dir);
 		close(cmd[i].fd_in);
 		close(cmd[i].fd_out);
+		free_the_tab(cmd[i].env);
 		free_struct_cmd(cmd, size);
 		exit(126);
 	}
@@ -71,22 +82,20 @@ int	exec_cmd(t_commands *cmd, int i, int size)
 	else
 	{
 		paths = create_paths_tab(&cmd[i]);
-		while (paths && paths[x])
-		{
-			execve(paths[x], cmd[i].arg, cmd[i].env);
+		while (paths && paths[x] && execve(paths[x], cmd[i].arg, cmd[i].env))
 			x++;
-		}
 		printf("%s: command not found\n", cmd[i].arg[0]);
 		if (paths)
 			free_the_tab(paths);
 	}
 	close(cmd[i].fd_in);
 	close(cmd[i].fd_out);
+	free_the_tab(cmd[i].env);
 	free_struct_cmd(cmd, size);
 	exit(127);
 }
 
-int execute_in_child_process(t_commands *cmd, int i, int size)
+int execute_in_child_process(t_commands *cmd, int i, int size, int *fd_tmp)
 {
 	int fork_pid;
 
@@ -94,28 +103,30 @@ int execute_in_child_process(t_commands *cmd, int i, int size)
 	if (fork_pid < 0)
 		exit (EXIT_FAILURE);
 	if (fork_pid == 0)
+	{
+		close(fd_tmp[0]);
+		close(fd_tmp[1]);
 		exec_cmd(cmd, i, size);
+	}
 	return (0);
 }
 
 int execute_command(t_commands *cmd, int i, int size)
 {
 	int exit_status;
-	int tmp_stdin;
-	int tmp_stdout;
+	int	fd_tmp[2];
 
-	tmp_stdin = dup(STDIN_FILENO);
-	tmp_stdout = dup(STDOUT_FILENO);
-
+	fd_tmp[0] = dup(STDIN_FILENO);
+	fd_tmp[1] =  dup(STDOUT_FILENO);
 	dup2(cmd[i].fd_in, STDIN_FILENO);
 	dup2(cmd[i].fd_out, STDOUT_FILENO);
 
-	execute_in_child_process(cmd, i, size);
+	execute_in_child_process(cmd, i, size, fd_tmp);
 
-	dup2(tmp_stdin, STDIN_FILENO);
-	dup2(tmp_stdout, STDOUT_FILENO);
-	close(tmp_stdin);
-	close (tmp_stdout);
+	dup2(fd_tmp[0], STDIN_FILENO);
+	dup2(fd_tmp[1], STDOUT_FILENO);
+	close(fd_tmp[0]);
+	close (fd_tmp[1]);
 	return (0);
 }
 
@@ -123,11 +134,12 @@ int	wait_for_all_process(void)
 {
 	int status;
 
+	status = -42;
 	while (waitpid(-1, &status, 0) > 0)
 		;
-	if (WIFEXITED(status))
+	if (status != -42 && WIFEXITED(status))
 		return (WEXITSTATUS(status));
-	return (1);
+	return (0);
 }
 
 int execution(t_commands *cmd, int size)
@@ -139,6 +151,8 @@ int execution(t_commands *cmd, int size)
 	{
 		if (cmd[i].fd_in == -1 || cmd[i].fd_out == -1)
 			exit_status = 1;
+		else if (!cmd[i].arg[0])
+			exit_status = 0;
 		else
 			execute_command(cmd, i, size);
 		i++;
