@@ -43,6 +43,7 @@ int	set_struct_to_default(t_commands *cmd, char **env, int size)
 	i = 0;
 	while (i < size)
 	{
+		cmd[i].arg = NULL;
 		cmd[i].env = env;
 		cmd[i].fd_in = STDIN_FILENO;
 		cmd[i].fd_out = STDOUT_FILENO;
@@ -107,7 +108,7 @@ int	write_here_doc(char **lex, char **env, int exit_status)
 		free(line);
 		line = readline(">");
 	}
-	if (!line)
+	if (!line && !g_sig_flag)
 		printf("bash: warning: here-document delimited by end-of-file (wanted `%s')\n", lex[0]);
 	free(line);
 	close(fd_hd);
@@ -116,15 +117,29 @@ int	write_here_doc(char **lex, char **env, int exit_status)
 
 int	here_doc_infile(char **lex, t_commands *cmd, char **env, int exit_status)
 {
+	int	fdin_tmp;
+
+	fdin_tmp = dup(STDIN_FILENO);
+	set_signal_here_doc();
 	write_here_doc(&lex[1], env, exit_status);
+	if (g_sig_flag)
+	{
+		g_sig_flag = 0;
+		dup2(fdin_tmp, STDIN_FILENO);
+		if (unlink("/tmp/here_doc"))
+			perror("unlike");
+		close(fdin_tmp);
+		return (-1);
+	}
+	close(fdin_tmp);
 	if (cmd->fd_in != STDIN_FILENO)
 		close(cmd->fd_in);
 	cmd->fd_in = open("/tmp/here_doc", O_RDONLY);
 	if (cmd->fd_in == -1)
 		perror("here_doc_infile");
 	else if (unlink("/tmp/here_doc"))
-		printf("Error unlink infile\n");
-	return (2);
+		perror("unlike");
+	return (0);
 }
 
 int	great_outfile(char **lex, t_commands *cmd)
@@ -172,7 +187,7 @@ int	put_in_the_struct(char **lex, t_commands *cmd, char **env, int exit_status)
 	if (lex[0][0] == LESS)
 		return (less_infile(lex, cmd));
 	if (lex[0][0] == LESSLESS)
-		return (here_doc_infile(lex, cmd, env, exit_status));
+		return (2);
 	if (lex[0][0] == GREAT)
 		return (great_outfile(lex, cmd));
 	if (lex[0][0] == GREATGREAT)
@@ -205,6 +220,11 @@ t_commands *fill_the_struct(char **lex, char **env, int size, int exit_status)
 
 	cmd = malloc(sizeof(t_commands) * (size + 1));
 	set_struct_to_default(cmd, env, size);
+	if (open_here_doc(lex, cmd, env, exit_status))
+	{
+		free_struct_cmd(cmd, size);
+		return (NULL);
+	}
 	while (lex[x][0] != T_NEWLINE)
 	{
 		cmd[i].arg = malloc(sizeof(char *) * (nb_of_arg(lex, x) + 1));
@@ -220,9 +240,53 @@ t_commands *fill_the_struct(char **lex, char **env, int size, int exit_status)
 	return (cmd);
 }
 
+void	signal_here_doc(int signal)
+{
+	if (signal == SIGINT)
+	{
+		g_sig_flag = 1;
+		ft_putstr_fd("\n", 1);
+		close (0);
+	}
+}
+
+void	set_signal_here_doc(void)
+{
+	struct sigaction	sa;
+
+	ft_bzero(&sa, sizeof(struct sigaction));
+	sa.sa_handler = &signal_here_doc;
+	sigaction(SIGINT, &sa, NULL);
+}
+
+int	open_here_doc(char **lex, t_commands *cmd, char **env, int exit_status)
+{
+	int	i;
+	int	x;
+	int	hd;
+
+	i = 0;
+	x = 0;
+	while (cmd && lex[x][0] != T_NEWLINE)
+	{
+		if (lex[x][0] == LESSLESS)
+		{
+			hd = here_doc_infile(&lex[x], &cmd[i], env, exit_status);
+			if (hd == -1)
+				return (1);
+			x += hd;
+		}
+		if (lex[x][0] == PIPE)
+			i++;
+		x++;
+	}
+	return (0);
+}
+
 t_commands  *parsing(char **lex, char **env, int size, int exit_status)
 {
 	t_commands *cmd;
+	
 	
 	cmd = fill_the_struct(lex, env, size, exit_status);
 	return (cmd);

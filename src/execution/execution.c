@@ -55,7 +55,7 @@ int	is_a_directory(t_commands *cmd, int i, int size)
 	DIR *dir = NULL;
 
 	dir = opendir(cmd[i].arg[0]);
-	if (dir || errno == EACCES)
+	if (dir)
 	{
 		printf("bash: %s: Is a directory\n", cmd[i].arg[0]);
 		closedir(dir);
@@ -130,7 +130,7 @@ int execute_command(t_commands *cmd, int i, int size)
 	return (0);
 }
 
-int	wait_for_all_process(void)
+int	wait_for_all_process(int exit_status)
 {
 	int status;
 
@@ -138,8 +138,17 @@ int	wait_for_all_process(void)
 	while (waitpid(-1, &status, 0) > 0)
 		;
 	if (status != -42 && WIFEXITED(status))
+	{
+		g_sig_flag = 0;
+		printf("exit; %d\n", WEXITSTATUS(status));
 		return (WEXITSTATUS(status));
-	return (0);
+	}
+	if (status == -42 && g_sig_flag)
+	{
+		g_sig_flag = 0;
+		return (69);
+	}
+	return (exit_status);
 }
 
 int execution(t_commands *cmd, int size)
@@ -158,6 +167,6 @@ int execution(t_commands *cmd, int size)
 		i++;
 	}
 	close_all_fd_except(cmd, -1, size);
-	exit_status = wait_for_all_process();
+	exit_status = wait_for_all_process(exit_status);
 	return (exit_status);
 }

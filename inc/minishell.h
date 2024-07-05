@@ -68,9 +68,9 @@ int	is_a_char_token(char c);
 int	is_a_token(t_token token);
 int	env_variable_detected(char *str);
 
-
-
 t_commands  *parsing(char **lex, char **env, int size, int exit_status);
+void	set_signal_here_doc(void);
+int	open_here_doc(char **lex, t_commands *cmd, char **env, int exit_status);
 
 int count_cmd(char **lex);
 

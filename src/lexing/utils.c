@@ -32,7 +32,8 @@ void	free_struct_cmd(t_commands *cmd, int size)
 	i = 0;
 	while (i < size)
 	{
-		free_the_tab(cmd[i].arg);
+		if (cmd[i].arg)
+			free_the_tab(cmd[i].arg);
 		i++;
 	}
 	free(cmd);

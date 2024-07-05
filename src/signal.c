@@ -2,7 +2,7 @@
 
 int sig_flag = 0;
 
-void	sigint_handler(int signal)
+void	signal_here_doc_test(int signal)
 {
 	if (signal == SIGINT)
 	{
@@ -15,12 +15,12 @@ void	sigint_handler(int signal)
 	}
 }
 
-void	set_signal_action(void)
+void	set_signal_here_doc_test(void)
 {
 	struct sigaction	sa;
 
 	ft_bzero(&sa, sizeof(struct sigaction));
-	sa.sa_handler = &sigint_handler;
+	sa.sa_handler = &signal_here_doc_test;
 	sigaction(SIGINT, &sa, NULL);
 }
 
@@ -31,7 +31,7 @@ int main(int argc, char **argv, char **env)
 	int std_in;
 
 	std_in = dup(STDIN_FILENO);
-	set_signal_action();
+	set_signal_here_doc_test();
 	if (argc != 2)
 		return (1);
 	fd_hd = open("/tmp/here_doc", O_CREAT | O_RDWR | O_TRUNC, 0644);

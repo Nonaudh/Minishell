@@ -20,14 +20,12 @@ int	minishell(char *line, char **env, int exit_status)
 	struct sigaction sa;
 	ft_bzero(&sa, sizeof(struct sigaction));
 	sa.sa_handler = &handle_sigstp_mini;
-	sigaction(SIGINT, &sa, NULL);
 
 	if (!line)
 		return (exit_status);
 	lex = lexing(line, env, exit_status);
 	if (!lex)
 		return (2);
-	//print_tab(lex);
 	size = count_cmd(lex);
 	if (size == 0)
 	{
@@ -36,13 +34,11 @@ int	minishell(char *line, char **env, int exit_status)
 	}
 	cmd = parsing(lex, env, size, exit_status);
 	free_the_tab(lex);
+	if (!cmd)
+		return (130);
+	sigaction(SIGINT, &sa, NULL);
 	exit_status = execution(cmd, size);
 	free_struct_cmd(cmd, size);
-	if (g_sig_flag == 1)
-	{
-		g_sig_flag = 0;
-		exit_status = 69;
-	}
 	return (exit_status);
 }
 
