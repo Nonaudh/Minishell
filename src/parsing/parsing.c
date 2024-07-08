@@ -72,6 +72,11 @@ int	less_infile(char **lex, t_commands *cmd)
 		perror(lex[1]);
 		return(until_pipe_or_newline(lex));
 	}
+	if (lex[0][0] == LESSLESS)
+	{
+		if (unlink(lex[1]))
+			perror("unlike");
+	}
 	return (2);
 }
 
@@ -115,7 +120,7 @@ int	write_here_doc(char **lex, char **env, int *exit_status)
 	return (0);
 }
 
-int	here_doc_infile(char **lex, t_commands *cmd, char **env, int *exit_status)
+char	*here_doc_infile(char **lex, t_commands *cmd, char **env, int *exit_status)
 {
 	int	fdin_tmp;
 
@@ -124,22 +129,23 @@ int	here_doc_infile(char **lex, t_commands *cmd, char **env, int *exit_status)
 	write_here_doc(&lex[1], env, exit_status);
 	if (g_sig_flag)
 	{
-		g_sig_flag = 0;
+		//g_sig_flag = 0;
 		dup2(fdin_tmp, STDIN_FILENO);
 		if (unlink("/tmp/here_doc"))
 			perror("unlike");
 		close(fdin_tmp);
-		return (-1);
+		return (lex[1]);
 	}
 	close(fdin_tmp);
-	if (cmd->fd_in != STDIN_FILENO)
-		close(cmd->fd_in);
-	cmd->fd_in = open("/tmp/here_doc", O_RDONLY);
-	if (cmd->fd_in == -1)
-		perror("here_doc_infile");
-	else if (unlink("/tmp/here_doc"))
-		perror("unlike");
-	return (0);
+	// if (cmd->fd_in != STDIN_FILENO)
+	// 	close(cmd->fd_in);
+	// cmd->fd_in = open("/tmp/here_doc", O_RDONLY);
+	// if (cmd->fd_in == -1)
+	// 	perror("here_doc_infile");
+	// else if (unlink("/tmp/here_doc"))
+	// 	perror("unlike");
+	free(lex[1]);
+	return (ft_strdup("/tmp/here_doc"));
 }
 
 int	great_outfile(char **lex, t_commands *cmd)
@@ -189,10 +195,10 @@ int	is_an_argument(char **lex, t_commands *cmd)
 
 int	put_in_the_struct(char **lex, t_commands *cmd, char **env, int *exit_status)
 {
-	if (lex[0][0] == LESS)
+	if (lex[0][0] == LESS || lex[0][0] == LESSLESS)
 		return (less_infile(lex, cmd));
-	if (lex[0][0] == LESSLESS)
-		return (2);
+	// if (lex[0][0] == LESSLESS)
+	// 	return (2);
 	if (lex[0][0] == GREAT)
 		return (great_outfile(lex, cmd));
 	if (lex[0][0] == GREATGREAT)
@@ -266,7 +272,6 @@ int	open_here_doc(char **lex, t_commands *cmd, char **env, int *exit_status)
 {
 	int	i;
 	int	x;
-	int	hd;
 
 	i = 0;
 	x = 0;
@@ -274,10 +279,13 @@ int	open_here_doc(char **lex, t_commands *cmd, char **env, int *exit_status)
 	{
 		if (lex[x][0] == LESSLESS)
 		{
-			hd = here_doc_infile(&lex[x], &cmd[i], env, exit_status);
-			if (hd == -1)
+			lex[x + 1] = here_doc_infile(&lex[x], &cmd[i], env, exit_status);
+			if (g_sig_flag)
+			{
+				g_sig_flag = 0;
 				return (1);
-			x += hd;
+			}
+			x += 2;
 		}
 		if (lex[x][0] == PIPE)
 			i++;
