@@ -131,66 +131,45 @@ int execute_command(t_commands *cmd, int i, int size)
 	return (fork_pid);
 }
 
-int	wait_for_all_process(int fork_pid, int exit_status)
+int	wait_for_all_process(int fork_pid, int *exit_status)
 {
 	int status;
 
 	waitpid(fork_pid, &status, 0);
 	if (WIFEXITED(status))
 	{
-		//g_sig_flag = 0;
-		exit_status = WEXITSTATUS(status);
-		printf("exit_fork; %d\n", exit_status);
+		*exit_status = WEXITSTATUS(status);
 	}
 	else if (g_sig_flag)
 	{
-		exit_status = 69;
-		//g_sig_flag = 0;
+		*exit_status = 69;
 	}
 	while (waitpid(-1, NULL, 0) > 0)
 		;
 	g_sig_flag = 0;
-	printf("exit_wait; %d\nsig_flag; %d\n", exit_status, g_sig_flag);
-	return(exit_status);
-	// status = -42;
-	// while (waitpid(-1, &status, 0) > 0)
-	// 	;
-	// if (status != -42 && WIFEXITED(status))
-	// {
-	// 	g_sig_flag = 0;
-	// 	printf("exit; %d\n", WEXITSTATUS(status));
-	// 	return (WEXITSTATUS(status));
-	// }
-	// if (status == -42 && g_sig_flag)
-	// {
-	// 	g_sig_flag = 0;
-	// 	return (69);
-	// }
-	// return (exit_status);
+	printf("exit; %d\n", *exit_status);
+	return(*exit_status);
 }
 
-int execution(t_commands *cmd, int size)
+int execution(t_commands *cmd, int size, int *exit_status)
 {
 	int i = 0;
-	int exit_status;
 	int fork_pid;
 
 	fork_pid = 0;
 	while(i < size)
 	{
 		if (cmd[i].fd_in == -1 || cmd[i].fd_out == -1)
-			;//exit_status = 1;
+			*exit_status = 1;
 		else if (!cmd[i].arg[0])
-			;//exit_status = 0;
+			*exit_status = 0;
 		else
 		{
 			fork_pid = execute_command(cmd, i, size);
-			//wait_for_process(fork_pid);
 		}
-			
 		i++;
 	}
+	wait_for_all_process(fork_pid, exit_status);
 	close_all_fd_except(cmd, -1, size);
-	exit_status = wait_for_all_process(fork_pid, exit_status);
-	return (exit_status);
+	return (*exit_status);
 }

@@ -40,9 +40,9 @@ typedef struct s_commands
 } t_commands;
 
 int 	main(int argc, char **argv, char **env_tmp);
-int		minishell(char *line, char **env, int exit_status);
+int		minishell(char *line, char **env, int *exit_status);
 
-char	**lexing(char *line, char **env, int exit_status);
+char	**lexing(char *line, char **env, int *exit_status);
 int		count_argc(char *str);
 char	**fill_lex(char *line, int argc);
 char	*next_argv(char *line, int *x);
@@ -52,9 +52,9 @@ char	*ft_ttoa(t_token token);
 char	*create_token(t_token token);
 int		check_syntax(char **lex);
 
-char	**expand_lex(char **lex, char **env, int exit_status);
-char	*expand_env(char *str, char **env, int exit_status);
-char	*add_env_value(char *little, char **env, int exit_status);
+char	**expand_lex(char **lex, char **env, int *exit_status);
+char	*expand_env(char *str, char **env, int *exit_status);
+char	*add_env_value(char *little, char **env, int *exit_status);
 char	*unquote(char *str);
 
 void	print_tab(char **tab);
@@ -68,13 +68,13 @@ int	is_a_char_token(char c);
 int	is_a_token(t_token token);
 int	env_variable_detected(char *str);
 
-t_commands  *parsing(char **lex, char **env, int size, int exit_status);
+t_commands  *parsing(char **lex, char **env, int size, int *exit_status);
 void	set_signal_here_doc(void);
-int	open_here_doc(char **lex, t_commands *cmd, char **env, int exit_status);
+int	open_here_doc(char **lex, t_commands *cmd, char **env, int *exit_status);
 
 int count_cmd(char **lex);
 
-int execution(t_commands *cmd, int size);
+int execution(t_commands *cmd, int size, int *exit_status);
 char	*ft_getenv(char *str, char **env);
 void	free_struct_cmd(t_commands *cmd, int size);
 

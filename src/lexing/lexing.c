@@ -86,7 +86,7 @@ int	count_argc(char *str)
 	return (count);
 }
 
-char	**lexing(char *line, char **env, int exit_status)
+char	**lexing(char *line, char **env, int *exit_status)
 {
 	int		argc;
 	char	**lex;
@@ -99,6 +99,7 @@ char	**lexing(char *line, char **env, int exit_status)
 		return (NULL);
 	if (check_syntax(lex))
 	{
+		*exit_status = 2;
 		free_the_tab(lex);
 		return (NULL);
 	}

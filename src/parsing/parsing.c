@@ -87,7 +87,7 @@ int	check_quote(char *limiter)
 	return (0);
 }
 
-int	write_here_doc(char **lex, char **env, int exit_status)
+int	write_here_doc(char **lex, char **env, int *exit_status)
 {
 	int		fd_hd;
 	char	*line;
@@ -115,7 +115,7 @@ int	write_here_doc(char **lex, char **env, int exit_status)
 	return (0);
 }
 
-int	here_doc_infile(char **lex, t_commands *cmd, char **env, int exit_status)
+int	here_doc_infile(char **lex, t_commands *cmd, char **env, int *exit_status)
 {
 	int	fdin_tmp;
 
@@ -173,6 +173,11 @@ int	is_an_argument(char **lex, t_commands *cmd)
 	int	i;
 
 	i = 0;
+	if (!cmd->arg)
+	{
+		cmd->arg = malloc(sizeof(char *) * (nb_of_arg(lex, 0) + 1));
+		cmd->arg[i] = NULL;
+	}
 	while (cmd->arg[i])
 		i++;
 	cmd->arg[i] = ft_strdup(lex[0]);
@@ -182,7 +187,7 @@ int	is_an_argument(char **lex, t_commands *cmd)
 	return (1);
 }
 
-int	put_in_the_struct(char **lex, t_commands *cmd, char **env, int exit_status)
+int	put_in_the_struct(char **lex, t_commands *cmd, char **env, int *exit_status)
 {
 	if (lex[0][0] == LESS)
 		return (less_infile(lex, cmd));
@@ -212,7 +217,7 @@ int	piped(t_commands *cmd_in, t_commands *cmd_out)
 	return (1);
 }
 
-t_commands *fill_the_struct(char **lex, char **env, int size, int exit_status)
+t_commands *fill_the_struct(char **lex, char **env, int size, int *exit_status)
 {
 	t_commands *cmd;
 	int	i = 0;
@@ -227,8 +232,6 @@ t_commands *fill_the_struct(char **lex, char **env, int size, int exit_status)
 	}
 	while (lex[x][0] != T_NEWLINE)
 	{
-		cmd[i].arg = malloc(sizeof(char *) * (nb_of_arg(lex, x) + 1));
-		cmd[i].arg[0] = NULL;
 		while (lex[x][0] != PIPE && lex[x][0] != T_NEWLINE)
 		{
 			x += put_in_the_struct(&lex[x], &cmd[i], env, exit_status);
@@ -259,7 +262,7 @@ void	set_signal_here_doc(void)
 	sigaction(SIGINT, &sa, NULL);
 }
 
-int	open_here_doc(char **lex, t_commands *cmd, char **env, int exit_status)
+int	open_here_doc(char **lex, t_commands *cmd, char **env, int *exit_status)
 {
 	int	i;
 	int	x;
@@ -283,10 +286,9 @@ int	open_here_doc(char **lex, t_commands *cmd, char **env, int exit_status)
 	return (0);
 }
 
-t_commands  *parsing(char **lex, char **env, int size, int exit_status)
+t_commands  *parsing(char **lex, char **env, int size, int *exit_status)
 {
 	t_commands *cmd;
-	
 	
 	cmd = fill_the_struct(lex, env, size, exit_status);
 	return (cmd);

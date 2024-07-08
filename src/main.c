@@ -11,7 +11,7 @@ void	handle_sigstp_mini(int signal)
 	}
 }
 
-int	minishell(char *line, char **env, int exit_status)
+int	minishell(char *line, char **env, int *exit_status)
 {
 	char **lex;
 	int size;
@@ -22,10 +22,10 @@ int	minishell(char *line, char **env, int exit_status)
 	sa.sa_handler = &handle_sigstp_mini;
 
 	if (!line)
-		return (exit_status);
+		return (*exit_status);
 	lex = lexing(line, env, exit_status);
 	if (!lex)
-		return (2);
+		return (*exit_status);
 	size = count_cmd(lex);
 	if (size == 0)
 	{
@@ -35,11 +35,14 @@ int	minishell(char *line, char **env, int exit_status)
 	cmd = parsing(lex, env, size, exit_status);
 	free_the_tab(lex);
 	if (!cmd)
-		return (130);
+	{
+		*exit_status = 130;
+		return (1);
+	}	
 	sigaction(SIGINT, &sa, NULL);
-	exit_status = execution(cmd, size);
+	execution(cmd, size, exit_status);
 	free_struct_cmd(cmd, size);
-	return (exit_status);
+	return (*exit_status);
 }
 
 void	handle_sigstp(int signal)
@@ -87,7 +90,7 @@ int main(int argc, char **argv, char **env_tmp)
 		}
 		if (line && *line)
 			add_history(line);
-		exit_status = minishell(line, env, exit_status);
+		minishell(line, env, &exit_status);
 	}
 	rl_clear_history();
 	free_the_tab(env);

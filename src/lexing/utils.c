@@ -30,6 +30,8 @@ void	free_struct_cmd(t_commands *cmd, int size)
 	int	i;
 
 	i = 0;
+	if (!cmd)
+		return ;
 	while (i < size)
 	{
 		if (cmd[i].arg)

@@ -36,7 +36,7 @@ char	*unquote(char *str)
 	return (lex);
 }
 
-char	*add_env_value(char *little, char **env, int exit_status)
+char	*add_env_value(char *little, char **env, int *exit_status)
 {
 	char	*env_value;
 	int x = 0;
@@ -46,7 +46,7 @@ char	*add_env_value(char *little, char **env, int exit_status)
 	if (ft_strlen(little) == 1 && little[0] == '?')
 	{
 		free(little);
-		return(ft_itoa(exit_status));
+		return(ft_itoa(*exit_status));
 	}
 	env_value = ft_strdup(ft_getenv(little, env));
 	free(little);
@@ -55,7 +55,7 @@ char	*add_env_value(char *little, char **env, int exit_status)
 	return (ft_strdup("\0"));
 }
 
-char	*expand_env(char *str, char **env, int exit_status)
+char	*expand_env(char *str, char **env, int *exit_status)
 {
 	int	i = 0;
 	char	*lex = NULL;
@@ -83,7 +83,7 @@ char	*expand_env(char *str, char **env, int exit_status)
 	return (lex);
 }
 
-char	**expand_lex(char **lex, char **env, int exit_status)
+char	**expand_lex(char **lex, char **env, int *exit_status)
 {
 	int i = 0;
 
