@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "bit": "c"
+        "bit": "c",
+        "algorithm": "c",
+        "memory": "c",
+        "numeric": "c"
     }
 }

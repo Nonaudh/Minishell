@@ -39,6 +39,7 @@ int	nb_of_arg(char **lex, int x)
 int	set_struct_to_default(t_commands *cmd, char **env, int size)
 {
 	int	i;
+	char **env_tmp;
 
 	i = 0;
 	while (i < size)
@@ -75,7 +76,7 @@ int	less_infile(char **lex, t_commands *cmd)
 	if (lex[0][0] == LESSLESS)
 	{
 		if (unlink(lex[1]))
-			perror("unlike");
+			perror("unlink");
 	}
 	return (2);
 }
@@ -90,6 +91,13 @@ int	check_quote(char *limiter)
 	if (limiter[i])
 		return (1);
 	return (0);
+}
+
+void	error_limiter_hd(char *limiteur)
+{
+	ft_putstr_fd("bash: warning: here-document delimited by end-of-file (wanted `", 2);
+	ft_putstr_fd(limiteur, 2);
+	ft_putstr_fd("')\n", 2);
 }
 
 int	write_here_doc(char **lex, char **env, int *exit_status)
@@ -114,7 +122,7 @@ int	write_here_doc(char **lex, char **env, int *exit_status)
 		line = readline(">");
 	}
 	if (!line && !g_sig_flag)
-		printf("bash: warning: here-document delimited by end-of-file (wanted `%s')\n", lex[0]);
+		error_limiter_hd(lex[0]);
 	free(line);
 	close(fd_hd);
 	return (0);
@@ -193,7 +201,7 @@ int	is_an_argument(char **lex, t_commands *cmd)
 	return (1);
 }
 
-int	put_in_the_struct(char **lex, t_commands *cmd, char **env, int *exit_status)
+int	put_in_the_struct(char **lex, t_commands *cmd, int *exit_status)
 {
 	if (lex[0][0] == LESS || lex[0][0] == LESSLESS)
 		return (less_infile(lex, cmd));
@@ -240,7 +248,7 @@ t_commands *fill_the_struct(char **lex, char **env, int size, int *exit_status)
 	{
 		while (lex[x][0] != PIPE && lex[x][0] != T_NEWLINE)
 		{
-			x += put_in_the_struct(&lex[x], &cmd[i], env, exit_status);
+			x += put_in_the_struct(&lex[x], &cmd[i], exit_status);
 		}
 		if (lex[x][0] == PIPE)
 			x += piped(&cmd[i], &cmd[i + 1]);
@@ -280,7 +288,7 @@ int	open_here_doc(char **lex, t_commands *cmd, char **env, int *exit_status)
 		if (lex[x][0] == LESSLESS)
 		{
 			lex[x + 1] = here_doc_infile(&lex[x], &cmd[i], env, exit_status);
-			if (g_sig_flag)
+			if (g_sig_flag || !lex[x + 1])
 			{
 				g_sig_flag = 0;
 				return (1);
@@ -289,7 +297,8 @@ int	open_here_doc(char **lex, t_commands *cmd, char **env, int *exit_status)
 		}
 		if (lex[x][0] == PIPE)
 			i++;
-		x++;
+		if (lex[x][0] != T_NEWLINE)
+			x++;
 	}
 	return (0);
 }

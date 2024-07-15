@@ -1,24 +1,6 @@
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-#include "../lib/libft/libft.h"
-
-
-#include <fcntl.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-
-#include <sys/types.h>
-#include <sys/wait.h>
-
-#include <dirent.h>
-#include <errno.h>
-
-#include <signal.h>
-
 extern int g_sig_flag;
 
 typedef enum e_token
@@ -39,8 +21,26 @@ typedef struct s_commands
 	int fd_out;
 } t_commands;
 
+#include "../lib/libft/libft.h"
+#include "builtins.h"
+
+#include <fcntl.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#include <dirent.h>
+#include <errno.h>
+
+#include <signal.h>
+
 int 	main(int argc, char **argv, char **env_tmp);
-int		minishell(char *line, char **env, int *exit_status);
+char	**minishell(char *line, char **env, int *exit_status);
 
 char	**lexing(char *line, char **env, int *exit_status);
 int		count_argc(char *str);
@@ -74,7 +74,8 @@ int	open_here_doc(char **lex, t_commands *cmd, char **env, int *exit_status);
 
 int count_cmd(char **lex);
 
-int execution(t_commands *cmd, int size, int *exit_status);
+char	**execution(t_commands *cmd, int size, int *exit_status);
+int	execute_command(t_commands *cmd, int i, int size, int *exit_status);
 char	*ft_getenv(char *str, char **env);
 void	free_struct_cmd(t_commands *cmd, int size);
 

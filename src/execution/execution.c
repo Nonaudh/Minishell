@@ -50,6 +50,13 @@ char	**create_paths_tab(t_commands *cmd)
 	return (tab);
 }
 
+void	error_is_a_directory(char *dir)
+{
+	ft_putstr_fd("bash: ", 2);
+	ft_putstr_fd(dir, 2);
+	ft_putstr_fd(": Is a directory\n", 2);
+}
+
 int	is_a_directory(t_commands *cmd, int i, int size)
 {
 	DIR *dir = NULL;
@@ -57,7 +64,7 @@ int	is_a_directory(t_commands *cmd, int i, int size)
 	dir = opendir(cmd[i].arg[0]);
 	if (dir)
 	{
-		printf("bash: %s: Is a directory\n", cmd[i].arg[0]);
+		error_is_a_directory(cmd[i].arg[0]);
 		closedir(dir);
 		close(cmd[i].fd_in);
 		close(cmd[i].fd_out);
@@ -70,6 +77,12 @@ int	is_a_directory(t_commands *cmd, int i, int size)
 	return (0);
 }
 
+void	error_cmd_not_found(char *cmd)
+{
+	ft_putstr_fd(cmd, 2);
+	ft_putstr_fd(": command not found\n", 2);
+}
+
 int	exec_cmd(t_commands *cmd, int i, int size)
 {
 	char **paths;
@@ -77,14 +90,14 @@ int	exec_cmd(t_commands *cmd, int i, int size)
 
 	close_all_fd_except(cmd, i, size);
 	execve(cmd[i].arg[0], cmd[i].arg, cmd[i].env);
-	if (strchr(cmd[i].arg[0], '/'))
+	if (ft_strchr(cmd[i].arg[0], '/'))
 		is_a_directory(cmd, i, size);
 	else
 	{
 		paths = create_paths_tab(&cmd[i]);
 		while (paths && paths[x] && execve(paths[x], cmd[i].arg, cmd[i].env))
 			x++;
-		printf("%s: command not found\n", cmd[i].arg[0]);
+		error_cmd_not_found(cmd[i].arg[0]);
 		if (paths)
 			free_the_tab(paths);
 	}
@@ -111,11 +124,59 @@ int execute_in_child_process(t_commands *cmd, int i, int size, int *fd_tmp)
 	return (fork_pid);
 }
 
-int execute_command(t_commands *cmd, int i, int size)
+char	**execute_in_main_process(t_commands *cmd, int *exit_status)
 {
-	int exit_status;
-	int	fd_tmp[2];
+	char **env = cmd->env;
+	if (!strcmp(cmd->arg[0], "echo"))
+		ft_echo(cmd, exit_status);
+	else if (!strcmp(cmd->arg[0], "cd"))
+		env = ft_cd(cmd, exit_status);
+	else if (!strcmp(cmd->arg[0], "pwd"))
+		ft_pwd();
+	else if (!strcmp(cmd->arg[0], "export"))
+		env = ft_export(cmd, exit_status);
+	else if (!strcmp(cmd->arg[0], "unset"))
+		env = ft_unset(cmd, exit_status);
+	else if (!strcmp(cmd->arg[0], "env"))
+		ft_env(cmd, exit_status);
+	// else if (!strcmp(arg[0], "exit"))
+	// 	;
+	return (env);
+}
+
+int	is_a_buildins(char **arg)
+{
+	if (!strcmp(arg[0], "echo") || !strcmp(arg[0], "cd")
+		|| !strcmp(arg[0], "pwd") || !strcmp(arg[0], "export")
+		|| !strcmp(arg[0], "unset") ||!strcmp(arg[0], "env")
+		|| !strcmp(arg[0], "exit"))
+		return (1);
+	return (0);
+}
+
+char	**execute_builtins(t_commands *cmd, int *exit_status)
+{
+	int		fd_tmp[2];
+	char	**env;
+
+	fd_tmp[0] = dup(STDIN_FILENO);
+	fd_tmp[1] =  dup(STDOUT_FILENO);
+	dup2(cmd->fd_in, STDIN_FILENO);
+	dup2(cmd->fd_out, STDOUT_FILENO);
+
+	env = execute_in_main_process(cmd, exit_status);
+
+	dup2(fd_tmp[0], STDIN_FILENO);
+	dup2(fd_tmp[1], STDOUT_FILENO);
+	close(fd_tmp[0]);
+	close (fd_tmp[1]);
+	return (env);
+}
+
+int	execute_command(t_commands *cmd, int i, int size, int *exit_status)
+{
 	int fork_pid;
+	int	fd_tmp[2];
 
 	fd_tmp[0] = dup(STDIN_FILENO);
 	fd_tmp[1] =  dup(STDOUT_FILENO);
@@ -133,25 +194,24 @@ int execute_command(t_commands *cmd, int i, int size)
 
 int	wait_for_all_process(int fork_pid, int *exit_status)
 {
-	int status;
-
-	waitpid(fork_pid, &status, 0);
-	if (WIFEXITED(status))
+	int status = 0;
+	if (fork_pid != 42)
+		waitpid(fork_pid, &status, 0);
+	if (fork_pid != 42 && WIFEXITED(status))
 	{
 		*exit_status = WEXITSTATUS(status);
 	}
-	else if (g_sig_flag)
+	else if (fork_pid != 42 && g_sig_flag)
 	{
 		*exit_status = 69;
 	}
 	while (waitpid(-1, NULL, 0) > 0)
 		;
 	g_sig_flag = 0;
-	printf("exit; %d\n", *exit_status);
-	return(*exit_status);
+	return (0);
 }
 
-int execution(t_commands *cmd, int size, int *exit_status)
+char	**execution(t_commands *cmd, int size, int *exit_status)
 {
 	int i = 0;
 	int fork_pid;
@@ -165,11 +225,17 @@ int execution(t_commands *cmd, int size, int *exit_status)
 			*exit_status = 0;
 		else
 		{
-			fork_pid = execute_command(cmd, i, size);
+			if (is_a_buildins(cmd[i].arg))
+			{
+				cmd->env = execute_builtins(&cmd[i], exit_status);
+				fork_pid = -42;
+			}
+			else
+				fork_pid = execute_command(cmd, i, size, exit_status);
 		}
 		i++;
 	}
-	wait_for_all_process(fork_pid, exit_status);
 	close_all_fd_except(cmd, -1, size);
-	return (*exit_status);
+	wait_for_all_process(fork_pid, exit_status);
+	return (cmd->env);
 }

@@ -73,7 +73,7 @@ char	*expand_env(char *str, char **env, int *exit_status)
 		{
 			i++;
 			start = i;
-			while (ft_isprint(str[i]) && str[i] != '\'' && str[i] != '\"' && str[i - 1] != '?' && str[i] != '$')
+			while (ft_isprint(str[i]) && str[i] != 32 && str[i] != '\'' && str[i] != '\"' && str[i - 1] != '?' && str[i] != '$')
 				i++;
 			lex = ft_strjoin_dup_frees(lex, add_env_value
 			(ft_substr(str, start, i - start), env, exit_status));

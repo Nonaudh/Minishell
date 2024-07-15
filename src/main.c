@@ -11,38 +11,62 @@ void	handle_sigstp_mini(int signal)
 	}
 }
 
-int	minishell(char *line, char **env, int *exit_status)
+void	set_signal_exec(void)
+{
+	struct sigaction sa;
+
+	ft_bzero(&sa, sizeof(struct sigaction));
+	sa.sa_handler = &handle_sigstp_mini;
+	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGPIPE, &sa, NULL);
+}
+
+void	print_cmd(t_commands *cmd, int size)
+{
+	int i = 0;
+
+	while (i < size)
+	{
+		print_tab(cmd[i].arg);
+		printf("int; %d\n", cmd[i].fd_in);
+		printf("out; %d\n\n", cmd[i].fd_out);
+		i++;
+	}
+}
+
+char	**minishell(char *line, char **env, int *exit_status)
 {
 	char **lex;
 	int size;
 	t_commands *cmd;
 	
-	struct sigaction sa;
-	ft_bzero(&sa, sizeof(struct sigaction));
-	sa.sa_handler = &handle_sigstp_mini;
+
 
 	if (!line)
-		return (*exit_status);
+		return (env);
 	lex = lexing(line, env, exit_status);
 	if (!lex)
-		return (*exit_status);
+		return (env);
 	size = count_cmd(lex);
 	if (size == 0)
 	{
 		free_the_tab(lex);
-		return (0);
+		return (env);
 	}
 	cmd = parsing(lex, env, size, exit_status);
 	free_the_tab(lex);
 	if (!cmd)
 	{
 		*exit_status = 130;
-		return (1);
-	}	
-	sigaction(SIGINT, &sa, NULL);
-	execution(cmd, size, exit_status);
+		return (env);
+	}
+	// print_cmd(cmd, size);
+	// return (0);
+	set_signal_exec();
+	env = execution(cmd, size, exit_status);
+	//printf("exit; %d\n", *exit_status);
 	free_struct_cmd(cmd, size);
-	return (*exit_status);
+	return (env);
 }
 
 void	handle_sigstp(int signal)
@@ -90,7 +114,7 @@ int main(int argc, char **argv, char **env_tmp)
 		}
 		if (line && *line)
 			add_history(line);
-		minishell(line, env, &exit_status);
+		env = minishell(line, env, &exit_status);
 	}
 	rl_clear_history();
 	free_the_tab(env);
