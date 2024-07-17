@@ -18,7 +18,7 @@ int	is_n_option(char *arg);
 
 int	ft_env(t_commands *cmd, int *exit_status);
 
-char    **ft_export(t_commands *cmd, int *exit_status);
+char    **ft_export(t_commands *cmd, int size, int *exit_status);
 int	print_sort_env(char **env);
 char	**add_env_variable(t_commands *cmd, int *exit_status);
 char	**add_arg_to_env(char *str, char **env, int *exit_status);

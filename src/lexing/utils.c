@@ -18,6 +18,8 @@ void	free_the_tab(char **tab)
 {
 	int i = 0;
 
+	if (!tab)
+		return ;
 	while (tab[i])
 	{
 		free(tab[i]);

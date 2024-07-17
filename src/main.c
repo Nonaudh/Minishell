@@ -2,12 +2,17 @@
 
 int	g_sig_flag = 0;
 
-void	handle_sigstp_mini(int signal)
+void	handle_sig_mini(int signal)
 {
 	if (signal == SIGINT)
 	{
 		g_sig_flag = 1;
 		ft_putstr_fd("\n", 1);
+	}
+	if (signal == SIGQUIT)
+	{
+		g_sig_flag = 1;
+		ft_putstr_fd("Quit (core dumped)\n", 1);
 	}
 }
 
@@ -16,9 +21,10 @@ void	set_signal_exec(void)
 	struct sigaction sa;
 
 	ft_bzero(&sa, sizeof(struct sigaction));
-	sa.sa_handler = &handle_sigstp_mini;
+	sa.sa_handler = &handle_sig_mini;
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGPIPE, &sa, NULL);
+	sigaction(SIGQUIT, &sa, NULL);
 }
 
 void	print_cmd(t_commands *cmd, int size)
@@ -38,38 +44,24 @@ char	**minishell(char *line, char **env, int *exit_status)
 {
 	char **lex;
 	int size;
+	char	**new_env;
 	t_commands *cmd;
 	
-
-
 	if (!line)
 		return (env);
 	lex = lexing(line, env, exit_status);
-	if (!lex)
-		return (env);
 	size = count_cmd(lex);
-	if (size == 0)
-	{
-		free_the_tab(lex);
-		return (env);
-	}
 	cmd = parsing(lex, env, size, exit_status);
 	free_the_tab(lex);
-	if (!cmd)
-	{
-		*exit_status = 130;
-		return (env);
-	}
-	// print_cmd(cmd, size);
-	// return (0);
 	set_signal_exec();
-	env = execution(cmd, size, exit_status);
-	//printf("exit; %d\n", *exit_status);
+	new_env = execution(cmd, size, exit_status);
 	free_struct_cmd(cmd, size);
-	return (env);
+	if (new_env)
+		return (new_env); 
+	return (NULL);
 }
 
-void	handle_sigstp(int signal)
+void	handle_sig_main(int signal)
 {
 	if (signal == SIGINT)
 	{
@@ -81,13 +73,17 @@ void	handle_sigstp(int signal)
 	}
 }
 
-void	handle_sig_main(void)
+void	set_signal_main(void)
 {
 	struct sigaction sa;
+	struct sigaction sa2;
 	
 	ft_bzero(&sa, sizeof(struct sigaction));
-	sa.sa_handler = &handle_sigstp;
+	ft_bzero(&sa2, sizeof(struct sigaction));
+	sa.sa_handler = &handle_sig_main;
+	sa2.sa_handler = SIG_IGN;
 	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGQUIT, &sa2, NULL);
 }
 
 int main(int argc, char **argv, char **env_tmp)
@@ -95,7 +91,7 @@ int main(int argc, char **argv, char **env_tmp)
 	char *line = (void *)1;
 	char **env;
 	int i = 0;
-	int	exit_status = 1;
+	int	exit_status = 0;
 
 	
 	env = ft_str_tab_dup(env_tmp);
@@ -103,7 +99,7 @@ int main(int argc, char **argv, char **env_tmp)
 		return (1);
 	while (line)
 	{
-		handle_sig_main();
+		set_signal_main();
 		if (line != (void *)1)
 			free(line);
 		line = readline("Minishell: ");
@@ -114,7 +110,11 @@ int main(int argc, char **argv, char **env_tmp)
 		}
 		if (line && *line)
 			add_history(line);
-		env = minishell(line, env, &exit_status);
+		env_tmp = minishell(line, env, &exit_status);
+		if (env_tmp)
+			env = env_tmp;
+		else
+			line = NULL;
 	}
 	rl_clear_history();
 	free_the_tab(env);

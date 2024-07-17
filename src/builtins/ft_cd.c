@@ -73,7 +73,9 @@ char	**put_pwd_in_old_pwd(char **env)
 	if (env[i])
 	{
 		env[i] = troncate_equal(env[i]);
-		env[i] = join_with_pwd(env, env[i]);
+		env[i] = join_with_pwd(env, env[i]);	
+		if (!env[i])
+			return (NULL);
 	}
 	return (env);
 }
@@ -102,6 +104,8 @@ char	**update_pwd(char **env)
 	{
 		env[i] = troncate_equal(env[i]);
 		env[i] = join_with_new_pwd(env[i]);
+		if (!env[i])
+			return (NULL);
 	}
 	return (env);
 }
@@ -113,6 +117,13 @@ char	**switch_pwd_env(char **env)
 	return (env);
 }
 
+void	error_no_such_file(char *arg)
+{
+	ft_putstr_fd("minishell: cd: ", 2);
+	ft_putstr_fd(arg, 2);
+	ft_putstr_fd(": No such file or directory\n", 2);
+}
+
 char	**ft_cd(t_commands *cmd, int *exit_status)
 {
 	char	*home;
@@ -120,7 +131,7 @@ char	**ft_cd(t_commands *cmd, int *exit_status)
 	if (count_arg(&cmd->arg[1]) == 1)
 	{
 		if (chdir(cmd->arg[1]))
-			printf("minishell: cd: %s: No such file or directory\n", cmd->arg[1]);
+			error_no_such_file(cmd->arg[1]);
 		else
 			cmd->env = switch_pwd_env(cmd->env);
 	}
@@ -128,7 +139,7 @@ char	**ft_cd(t_commands *cmd, int *exit_status)
 	{
 		home = ft_getenv("HOME", cmd->env);
 		if (!home)
-			printf("bash: cd: HOME not set\n");
+			ft_putstr_fd("bash: cd: HOME not set\n", 2);
 		else
 		{
 			chdir(home);
@@ -136,7 +147,7 @@ char	**ft_cd(t_commands *cmd, int *exit_status)
 		}
 	}
 	else
-		printf("bash: cd: too many arguments\n");
+		ft_putstr_fd("bash: cd: too many arguments\n", 2);
 	return (cmd->env);
 }
 

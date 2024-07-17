@@ -129,7 +129,7 @@ char *replace_with_arg(char *str, char *env)
 	if (str[i] == '=')
 		env = replace(str, env);
 	if (str[i] == '+')
-		env= join_arg(str + i + 2, env);
+		env = join_arg(str + i + 2, env);
 	return(env);
 }
 
@@ -145,6 +145,8 @@ char	**realloc_and_copy_env(char **env_tmp, int size)
 	while (env_tmp[i])
 	{
 		env[i] = ft_strdup(env_tmp[i]);
+		if (!env[i])
+			return (NULL);
 		i++;
 	}
 	env[i] = NULL;
@@ -180,6 +182,8 @@ char **create_arg(char *str, char **env_tmp)
 
 	size_env = count_arg(env_tmp);
 	env = realloc_and_copy_env(env_tmp, size_env + 1);
+	if (!env)
+		return (NULL);
 	i = 0;
 	while (str[i] && str[i] != '+' && str[i] != '=')
 		i++;
@@ -187,6 +191,8 @@ char **create_arg(char *str, char **env_tmp)
 		env[size_env] = ft_strdup(str);
 	else
 		env[size_env] = create_without_plus(str);
+	if (!env[size_env])
+		return (NULL);
 	env[size_env + 1] = NULL;
 	return (env);
 }
@@ -201,7 +207,11 @@ char	**add_arg_to_env(char *str, char **env, int *exit_status)
 	while (env[i] && search_arg_in_env(str, env[i]))
 		i++;
 	if (env[i])
+	{
 		env[i] = replace_with_arg(str, env[i]);
+		if (!env[i])
+			return (NULL);
+	}
 	else
 		env = create_arg(str, env);
 	return (env);
@@ -212,7 +222,7 @@ char	**add_env_variable(t_commands *cmd, int *exit_status)
 	int		i;
 
 	i = 1;
-	while (cmd->arg[i])
+	while (cmd->env && cmd->arg[i])
 	{
 		cmd->env = add_arg_to_env(cmd->arg[i], cmd->env, exit_status);
 		i++;
@@ -231,6 +241,8 @@ int	print_sort_env(char **env)
 	j = 0;
 	size = count_arg(env);
 	tab = malloc(sizeof(int) * size);
+	if (!tab)
+		return (1);
 	while (j < size)
 	{
 		i = 0;
@@ -249,13 +261,14 @@ int	print_sort_env(char **env)
 	return (0);
 }
 
-char	**ft_export(t_commands *cmd, int *exit_status)
+char	**ft_export(t_commands *cmd, int size, int *exit_status)
 {
 	if (count_arg(&cmd->arg[1]) == 0)
 	{
-		print_sort_env(cmd->env);
+		if (print_sort_env(cmd->env))
+			return (NULL);
 	}
-	if (count_arg(&cmd->arg[1]) > 0)
+	if (size == 1 && count_arg(&cmd->arg[1]) > 0)
 	{
 		cmd->env = add_env_variable(cmd, exit_status);
 	}

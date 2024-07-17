@@ -72,8 +72,8 @@ int	is_a_directory(t_commands *cmd, int i, int size)
 		free_struct_cmd(cmd, size);
 		exit(126);
 	}
-	ft_putstr_fd("bash: ", 2);
-	perror(cmd[i].arg[0]);
+	if (access(cmd[i].arg[0], X_OK))
+		perror(cmd[i].arg[0]);
 	return (0);
 }
 
@@ -124,37 +124,58 @@ int execute_in_child_process(t_commands *cmd, int i, int size, int *fd_tmp)
 	return (fork_pid);
 }
 
-char	**execute_in_main_process(t_commands *cmd, int *exit_status)
+int	ft_strcmp(char *s1, char *s2)
 {
-	char **env = cmd->env;
-	if (!strcmp(cmd->arg[0], "echo"))
+	int	i;
+
+	i = 0;
+	if (!s1 || !s2)
+		return (0);
+	while (s1[i] && s2[i] && s1[i] == s2[i])
+		i++;
+	return (s1[i] - s2[i]);
+}
+
+char	**ft_exit(t_commands *cmd, int *exit_status)
+{
+	return (NULL);
+}
+
+char	**execute_in_main_process(t_commands *cmd, int size, int *exit_status)
+{
+	char **env;
+
+	env = cmd->env;
+	if (!ft_strcmp(cmd->arg[0], "echo"))
 		ft_echo(cmd, exit_status);
-	else if (!strcmp(cmd->arg[0], "cd"))
+	else if (size == 1 && !strcmp(cmd->arg[0], "cd"))
 		env = ft_cd(cmd, exit_status);
-	else if (!strcmp(cmd->arg[0], "pwd"))
+	else if (!ft_strcmp(cmd->arg[0], "pwd"))
 		ft_pwd();
-	else if (!strcmp(cmd->arg[0], "export"))
-		env = ft_export(cmd, exit_status);
-	else if (!strcmp(cmd->arg[0], "unset"))
+	else if (!ft_strcmp(cmd->arg[0], "export"))
+		env = ft_export(cmd, size, exit_status);
+	else if (size == 1 && !ft_strcmp(cmd->arg[0], "unset"))
 		env = ft_unset(cmd, exit_status);
-	else if (!strcmp(cmd->arg[0], "env"))
+	else if (!ft_strcmp(cmd->arg[0], "env"))
 		ft_env(cmd, exit_status);
-	// else if (!strcmp(arg[0], "exit"))
-	// 	;
+	else if (size == 1 && !strcmp(cmd->arg[0], "exit"))
+		env = ft_exit(cmd, exit_status);
 	return (env);
 }
 
 int	is_a_buildins(char **arg)
 {
-	if (!strcmp(arg[0], "echo") || !strcmp(arg[0], "cd")
-		|| !strcmp(arg[0], "pwd") || !strcmp(arg[0], "export")
-		|| !strcmp(arg[0], "unset") ||!strcmp(arg[0], "env")
-		|| !strcmp(arg[0], "exit"))
+	if (!arg || !arg[0])
+		return (0);
+	if (!ft_strcmp(arg[0], "echo") || !ft_strcmp(arg[0], "cd")
+		|| !ft_strcmp(arg[0], "pwd") || !ft_strcmp(arg[0], "export")
+		|| !ft_strcmp(arg[0], "unset") ||!ft_strcmp(arg[0], "env")
+		|| !ft_strcmp(arg[0], "exit"))
 		return (1);
 	return (0);
 }
 
-char	**execute_builtins(t_commands *cmd, int *exit_status)
+char	**execute_builtins(t_commands *cmd, int size, int *exit_status)
 {
 	int		fd_tmp[2];
 	char	**env;
@@ -164,7 +185,7 @@ char	**execute_builtins(t_commands *cmd, int *exit_status)
 	dup2(cmd->fd_in, STDIN_FILENO);
 	dup2(cmd->fd_out, STDOUT_FILENO);
 
-	env = execute_in_main_process(cmd, exit_status);
+	env = execute_in_main_process(cmd, size, exit_status);
 
 	dup2(fd_tmp[0], STDIN_FILENO);
 	dup2(fd_tmp[1], STDOUT_FILENO);
@@ -178,6 +199,8 @@ int	execute_command(t_commands *cmd, int i, int size, int *exit_status)
 	int fork_pid;
 	int	fd_tmp[2];
 
+	if (!cmd[i].arg || !cmd[i].arg[0])
+		return (-42);
 	fd_tmp[0] = dup(STDIN_FILENO);
 	fd_tmp[1] =  dup(STDOUT_FILENO);
 	dup2(cmd[i].fd_in, STDIN_FILENO);
@@ -195,13 +218,13 @@ int	execute_command(t_commands *cmd, int i, int size, int *exit_status)
 int	wait_for_all_process(int fork_pid, int *exit_status)
 {
 	int status = 0;
-	if (fork_pid != 42)
+	if (fork_pid != -42)
 		waitpid(fork_pid, &status, 0);
-	if (fork_pid != 42 && WIFEXITED(status))
+	if (fork_pid != -42 && WIFEXITED(status))
 	{
 		*exit_status = WEXITSTATUS(status);
 	}
-	else if (fork_pid != 42 && g_sig_flag)
+	else if (fork_pid != -42 && g_sig_flag)
 	{
 		*exit_status = 69;
 	}
@@ -216,22 +239,26 @@ char	**execution(t_commands *cmd, int size, int *exit_status)
 	int i = 0;
 	int fork_pid;
 
-	fork_pid = 0;
+	fork_pid = -42;
+	if (!cmd)
+		return (NULL);
 	while(i < size)
 	{
-		if (cmd[i].fd_in == -1 || cmd[i].fd_out == -1)
-			*exit_status = 1;
-		else if (!cmd[i].arg[0])
-			*exit_status = 0;
-		else
+		if (cmd[i].fd_in != -1 && cmd[i].fd_out != -1)
 		{
 			if (is_a_buildins(cmd[i].arg))
 			{
-				cmd->env = execute_builtins(&cmd[i], exit_status);
+				*exit_status = 0;
+				cmd->env = execute_builtins(&cmd[i], size, exit_status);
 				fork_pid = -42;
 			}
 			else
 				fork_pid = execute_command(cmd, i, size, exit_status);
+		}
+		else
+		{
+			*exit_status = 1;
+			fork_pid = -42;
 		}
 		i++;
 	}
