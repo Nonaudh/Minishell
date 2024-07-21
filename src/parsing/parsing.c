@@ -7,6 +7,8 @@ int count_cmd(char **lex)
 
 	count = 1;
 	i = 0;
+	if (!lex)
+		return (0);
 	if (lex[0][0] == T_NEWLINE)
 		return (0);
 	while (lex[i])
@@ -23,8 +25,6 @@ int	nb_of_arg(char **lex, int x)
 	int	count = 0;
 	int i = 0;
 
-	if (!lex)
-		return (0);
 	while (lex[x][0] != PIPE && lex[x][0] != T_NEWLINE)
 	{
 		if (is_a_token(lex[x][0]))
@@ -79,7 +79,7 @@ int	less_infile(char **lex, t_commands *cmd, int *exit_status)
 	if (lex[0][0] == LESSLESS)
 	{
 		if (unlink(lex[1]))
-			perror("unlink");
+			perror("unlink : here_doc");
 	}
 	return (2);
 }
@@ -103,7 +103,7 @@ void	error_limiter_hd(char *limiteur)
 	ft_putstr_fd("')\n", 2);
 }
 
-int	write_here_doc(char **lex, char **env, int *exit_status)
+int	write_here_doc(char **lex, char **env, int *exit_status, char *hd_name)
 {
 	int		fd_hd;
 	char	*line;
@@ -111,7 +111,7 @@ int	write_here_doc(char **lex, char **env, int *exit_status)
 
 	quote = check_quote(lex[0]);
 	lex[0] = unquote(lex[0]);
-	fd_hd = open("/tmp/here_doc", O_CREAT | O_RDWR | O_TRUNC, 0644);
+	fd_hd = open(hd_name, O_CREAT | O_RDWR | O_TRUNC, 0644);
 	if (fd_hd == -1)
 		perror("here_doc");
 	line = readline(">");
@@ -131,18 +131,33 @@ int	write_here_doc(char **lex, char **env, int *exit_status)
 	return (0);
 }
 
+char	*here_doc_name(void)
+{
+	if (access("/tmp/9036fddhsg", F_OK))
+		return ("/tmp/9036fddhsg");
+	if (access("/tmp/ie856fdgskd", F_OK))
+		return ("/tmp/ie856fdgskd");
+	if (access("/tmp/9ioqrac34g", F_OK))
+		return ("/tmp/9ioqrac34g");
+	if (access("/tmp/hfdyr649834hdf", F_OK))
+		return ("/tmp/hfdyr649834hdf");
+	return ("/tmp/jdhw782gtfsdh");
+}
+
 char	*here_doc_infile(char **lex, t_commands *cmd, char **env, int *exit_status)
 {
 	int	fdin_tmp;
+	char	*hd_name;
 
 	fdin_tmp = dup(STDIN_FILENO);
 	set_signal_here_doc();
-	write_here_doc(&lex[1], env, exit_status);
+	hd_name = here_doc_name();
+	write_here_doc(&lex[1], env, exit_status, hd_name);
 	if (g_sig_flag)
 	{
 		//g_sig_flag = 0;
 		dup2(fdin_tmp, STDIN_FILENO);
-		if (unlink("/tmp/here_doc"))
+		if (unlink(hd_name))
 			perror("unlike");
 		close(fdin_tmp);
 		return (lex[1]);
@@ -156,7 +171,7 @@ char	*here_doc_infile(char **lex, t_commands *cmd, char **env, int *exit_status)
 	// else if (unlink("/tmp/here_doc"))
 	// 	perror("unlike");
 	free(lex[1]);
-	return (ft_strdup("/tmp/here_doc"));
+	return (ft_strdup(hd_name));
 }
 
 int	great_outfile(char **lex, t_commands *cmd, int *exit_status)
@@ -195,6 +210,8 @@ int	is_an_argument(char **lex, t_commands *cmd)
 	if (!cmd->arg)
 	{
 		cmd->arg = malloc(sizeof(char *) * (nb_of_arg(lex, 0) + 1));
+		if (!cmd->arg)
+			return (-1);
 		cmd->arg[i] = NULL;
 	}
 	if (!lex[0][0])
@@ -203,7 +220,7 @@ int	is_an_argument(char **lex, t_commands *cmd)
 		i++;
 	cmd->arg[i] = ft_strdup(lex[0]);
 	if (!cmd->arg[i])
-		printf("Error malloc\n");
+		return (-1);
 	cmd->arg[i + 1] = NULL;
 	return (1);
 }
@@ -238,30 +255,55 @@ int	piped(t_commands *cmd_in, t_commands *cmd_out)
 	return (1);
 }
 
-t_commands *fill_the_struct(char **lex, char **env, int size, int *exit_status)
+t_commands *error_struct_cmd(t_commands *cmd, int size, int *exit_status)
+{
+	*exit_status = 1;
+	free_struct_cmd(cmd, size);
+	return (NULL);
+}
+
+t_commands *fill_the_struct(char **lex, t_commands *cmd, int size, int *exit_status)
+{
+	int	i;
+	int	x;
+	int	y;
+
+	i = 0;
+	x = 0;
+	y = 0;
+	while (y != -1 && lex[x][0] != T_NEWLINE)
+	{
+		while (y != -1 && lex[x][0] != PIPE && lex[x][0] != T_NEWLINE)
+		{
+			y = put_in_the_struct(&lex[x], &cmd[i], exit_status);
+			x += y;
+		}	
+		if (y != -1 && lex[x][0] == PIPE)
+		{
+			y = piped(&cmd[i], &cmd[i + 1]);
+			x += y;
+		}		
+		i++;
+	}
+	if (y == -1)
+		return (error_struct_cmd(cmd, size, exit_status));
+	return (cmd);
+}
+
+t_commands *create_struct_cmd(char **lex, char **env, int size, int *exit_status)
 {
 	t_commands *cmd;
-	int	i = 0;
-	int	x = 0;
 
 	cmd = malloc(sizeof(t_commands) * (size + 1));
 	if (!cmd)
 		return (NULL);
 	set_struct_to_default(cmd, env, size);
-	if (open_here_doc(lex, cmd, env, exit_status))
-		x = -1;
-	while (x != -1 && lex[x][0] != T_NEWLINE)
-	{
-		while (x != -1 && lex[x][0] != PIPE && lex[x][0] != T_NEWLINE)
-			x += put_in_the_struct(&lex[x], &cmd[i], exit_status);
-		if (x != -1 && lex[x][0] == PIPE)
-			x += piped(&cmd[i], &cmd[i + 1]);
-		i++;
-	}
-	if (x == -1)
+	if (!open_here_doc(lex, cmd, env, exit_status))
+		cmd = fill_the_struct(lex, cmd, size, exit_status);
+	else
 	{
 		free_struct_cmd(cmd, size);
-		return (NULL);
+		cmd = NULL;
 	}
 	return (cmd);
 }
@@ -270,7 +312,7 @@ void	signal_here_doc(int signal)
 {
 	if (signal == SIGINT)
 	{
-		g_sig_flag = 1;
+		g_sig_flag = 130;
 		ft_putstr_fd("\n", 1);
 		close (0);
 	}
@@ -303,7 +345,7 @@ int	open_here_doc(char **lex, t_commands *cmd, char **env, int *exit_status)
 			lex[x + 1] = here_doc_infile(&lex[x], &cmd[i], env, exit_status);
 			if (g_sig_flag || !lex[x + 1])
 			{
-				*exit_status = 130;
+				*exit_status = g_sig_flag;
 				g_sig_flag = 0;
 				return (1);
 			}
@@ -321,8 +363,8 @@ t_commands  *parsing(char **lex, char **env, int size, int *exit_status)
 {
 	t_commands *cmd;
 	
-	if (!size)
-		return (NULL);
-	cmd = fill_the_struct(lex, env, size, exit_status);
+	// if (!size)
+	// 	return (NULL);
+	cmd = create_struct_cmd(lex, env, size, exit_status);
 	return (cmd);
 }

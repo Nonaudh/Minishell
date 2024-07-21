@@ -1,3 +1,5 @@
 *.o
 *.a
 minishell
+ft_minishell_test
+minishell_tester

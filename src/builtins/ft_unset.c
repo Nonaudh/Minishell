@@ -42,11 +42,16 @@ char	**try_to_unset(t_commands *cmd, int x, int *exit_status)
 	return (cmd->env);
 }
 
-char	**ft_unset(t_commands *cmd, int *exit_status)
+char	**ft_unset(t_commands *cmd, int size, int *exit_status)
 {
 	int	x;
 
 	x = 1;
+	*exit_status = 0;
+	if (check_option(cmd->arg))
+		return (error_option(cmd, exit_status, 2));
+	if (size > 1)
+		return (cmd->env);
 	while (cmd->env && cmd->arg[x])
 	{
 		cmd->env = try_to_unset(cmd, x, exit_status);

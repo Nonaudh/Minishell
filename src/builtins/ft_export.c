@@ -197,12 +197,12 @@ char **create_arg(char *str, char **env_tmp)
 	return (env);
 }
 
-char	**add_arg_to_env(char *str, char **env, int *exit_status)
+char	**add_arg_to_env(char *str, char **env, int size, int *exit_status)
 {
 	int i;
 
 	i = 0;
-	if (check_argument_export(str, exit_status))
+	if (check_argument_export(str, exit_status) || size > 1)
 		return (env);
 	while (env[i] && search_arg_in_env(str, env[i]))
 		i++;
@@ -217,14 +217,37 @@ char	**add_arg_to_env(char *str, char **env, int *exit_status)
 	return (env);
 }
 
-char	**add_env_variable(t_commands *cmd, int *exit_status)
+int	check_option(char **arg)
+{
+	int	i;
+
+	i = 0;
+	if (arg[1] && arg[1][0] == '-' && arg[1][1])
+		return (1);
+	return (0);
+}
+
+char	**error_option(t_commands *cmd, int *exit_status, int error_code)
+{
+	*exit_status = error_code;
+	ft_putstr_fd("bash: ", 2);
+	ft_putstr_fd(cmd->arg[0], 2);
+	ft_putstr_fd(": ", 2);
+	write(2, cmd->arg[1], 2);
+	ft_putstr_fd(": invalid option\n", 2);
+	return (cmd->env);
+}
+
+char	**add_env_variable(t_commands *cmd, int size, int *exit_status)
 {
 	int		i;
 
 	i = 1;
+	if (check_option(cmd->arg))
+		return (error_option(cmd, exit_status, 2));
 	while (cmd->env && cmd->arg[i])
 	{
-		cmd->env = add_arg_to_env(cmd->arg[i], cmd->env, exit_status);
+		cmd->env = add_arg_to_env(cmd->arg[i], cmd->env, size, exit_status);
 		i++;
 	}
 	return (cmd->env);
@@ -263,14 +286,15 @@ int	print_sort_env(char **env)
 
 char	**ft_export(t_commands *cmd, int size, int *exit_status)
 {
+	*exit_status = 0;
 	if (count_arg(&cmd->arg[1]) == 0)
 	{
 		if (print_sort_env(cmd->env))
 			return (NULL);
 	}
-	if (size == 1 && count_arg(&cmd->arg[1]) > 0)
+	if (count_arg(&cmd->arg[1]) > 0)
 	{
-		cmd->env = add_env_variable(cmd, exit_status);
+		cmd->env = add_env_variable(cmd, size, exit_status);
 	}
 	return (cmd->env);
 }

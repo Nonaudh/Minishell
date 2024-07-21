@@ -58,6 +58,8 @@ char	*join_with_pwd(char **env, char *str)
 	char	*pwd;
 
 	pwd = ft_getenv("PWD", env);
+	if (!pwd)
+		return (str);
 	old_pwd = ft_strjoin(str, pwd);
 	free(str);
 	return (old_pwd);
@@ -95,7 +97,8 @@ char	*join_with_new_pwd(char *str)
 
 char	**update_pwd(char **env)
 {
-	int	i;
+	int		i;
+	char	*str;
 
 	i = 0;
 	while (env[i] && ft_strncmp(env[i], "PWD=", 4))
@@ -107,6 +110,11 @@ char	**update_pwd(char **env)
 		if (!env[i])
 			return (NULL);
 	}
+	else
+	{
+		str = join_with_new_pwd(ft_strdup("PWD="));
+		env = create_arg(str, env);
+	}
 	return (env);
 }
 
@@ -117,21 +125,34 @@ char	**switch_pwd_env(char **env)
 	return (env);
 }
 
-void	error_no_such_file(char *arg)
+void	error_no_such_file(char *arg, int *exit_status)
 {
+	*exit_status = 1;
 	ft_putstr_fd("minishell: cd: ", 2);
-	ft_putstr_fd(arg, 2);
-	ft_putstr_fd(": No such file or directory\n", 2);
+	// ft_putstr_fd(arg, 2);
+	// ft_putstr_fd(": No such file or directory\n", 2);
+	perror(arg);
 }
 
-char	**ft_cd(t_commands *cmd, int *exit_status)
+void	error(char *str, int *exit_status)
+{
+	*exit_status = 1;
+	ft_putstr_fd(str, 2);
+}
+
+char	**ft_cd(t_commands *cmd, int size, int *exit_status)
 {
 	char	*home;
 
+	*exit_status = 0;
+	if (check_option(cmd->arg))
+		return (error_option(cmd, exit_status, 2));
+	if (size > 1)
+		return (cmd->env);
 	if (count_arg(&cmd->arg[1]) == 1)
 	{
 		if (chdir(cmd->arg[1]))
-			error_no_such_file(cmd->arg[1]);
+			error_no_such_file(cmd->arg[1], exit_status);
 		else
 			cmd->env = switch_pwd_env(cmd->env);
 	}
@@ -139,15 +160,16 @@ char	**ft_cd(t_commands *cmd, int *exit_status)
 	{
 		home = ft_getenv("HOME", cmd->env);
 		if (!home)
-			ft_putstr_fd("bash: cd: HOME not set\n", 2);
+			error("bash: cd: HOME not set\n", exit_status);
 		else
 		{
-			chdir(home);
+			if (chdir(home))
+				error_no_such_file(home, exit_status);
 			cmd->env = switch_pwd_env(cmd->env);
 		}
 	}
 	else
-		ft_putstr_fd("bash: cd: too many arguments\n", 2);
+		error("bash: cd: too many arguments\n", exit_status);
 	return (cmd->env);
 }
 

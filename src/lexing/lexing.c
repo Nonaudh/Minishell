@@ -36,32 +36,47 @@ int	add_token_newline(char **lex)
 	while (lex[i] && lex[i][0])
 		i++;
 	lex[i] = create_token(T_NEWLINE);
+	if (!lex[i])
+		return (1);
 	return (0);
 }
 
 char	**fill_lex(char *line, int argc)
 {
 	char	**lex;
-	int		i = 0;
-	int		x = 0;
+	int		i;
+	int		x;
 
+	i = 0;
+	x = 0;
 	lex = malloc(sizeof(char *) * (argc + 1));
+	if (!lex)
+		return (NULL);
 	while (i < argc)
 	{
 		lex[i] = next_argv(line, &x);
 		i++;
 	}
-	add_token_newline(lex);
+	if (add_token_newline(lex))
+		return (NULL);
 	lex[i] = NULL;
 	return (lex);
 }
 
+int	error_quote(void)
+{
+	ft_putstr_fd("Error unclosed quote\n", 2);
+	return (-42);
+}
+
 int	count_argc(char *str)
 {
-	int i = 0;
-	int count = 0;
+	int i;
+	int count;
 	int	quote;
 
+	i = 0;
+	count = 0;
 	while (str[i])
 	{
 		while (str[i] <= 32 && str[i] != '\n')
@@ -73,10 +88,7 @@ int	count_argc(char *str)
 		{
 			quote = ft_strchr_index(&str[i + 1], str[i]);
 			if (quote == -1)
-			{
-				printf("Error quote\n");
-				return (-42);
-			}
+				return (error_quote());
 			i = i + quote + 1;
 			if (str[i + 1] <= 32 || is_a_char_token(str[i + 1]))
 				count++;
@@ -104,6 +116,5 @@ char	**lexing(char *line, char **env, int *exit_status)
 		return (NULL);
 	}
 	lex = expand_lex(lex, env, exit_status);
-
 	return (lex);
 }

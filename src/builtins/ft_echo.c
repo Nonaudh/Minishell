@@ -52,6 +52,7 @@ int	ft_echo(t_commands *cmd, int *exit_status)
 	int	i;
 
 	i = 1;
+	*exit_status = 0;
 	while (cmd->arg[i] && is_n_option(cmd->arg[i]))
 		i++;
 	if (i != 1)

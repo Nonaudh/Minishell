@@ -138,15 +138,31 @@ typedef struct s_cmd
 	char ***env;
 }	t_cmd;
 
+char	**copy_str (char*str)
+{
+
+}
+
+char	*fill_name(void)
+{
+	char	name[10][20];
+
+	ft_strlcpy(name[0], "tmp/here_doc", 20);
+	return (&name[0][0]);
+}
 
 int main(int argc, char **argv, char **env_tmp)
 {
-	char	**env;
-	t_cmd cmd;
+	// char	**env;
+	// t_cmd cmd;
 
-	env = ft_str_tab_dup_without(env_tmp, -1);
-	cmd.env = &env;
-	erase_path(cmd.env);
-	print_tab(env);
-	free_the_tab(env);
+	// env = ft_str_tab_dup_without(env_tmp, -1);
+	// cmd.env = &env;
+	// erase_path(cmd.env);
+	// print_tab(env);
+	// free_the_tab(env);
+
+	char	*name;
+
+	name = fill_name();
 }

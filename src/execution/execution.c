@@ -62,7 +62,7 @@ int	is_a_directory(t_commands *cmd, int i, int size)
 	DIR *dir = NULL;
 
 	dir = opendir(cmd[i].arg[0]);
-	if (dir)
+	if (dir || errno == EACCES)
 	{
 		error_is_a_directory(cmd[i].arg[0]);
 		closedir(dir);
@@ -74,7 +74,9 @@ int	is_a_directory(t_commands *cmd, int i, int size)
 	}
 	if (access(cmd[i].arg[0], X_OK))
 		perror(cmd[i].arg[0]);
-	return (0);
+	if (errno == EACCES)
+		return (126);
+	return (127);
 }
 
 void	error_cmd_not_found(char *cmd)
@@ -87,11 +89,12 @@ int	exec_cmd(t_commands *cmd, int i, int size)
 {
 	char **paths;
 	int x = 0;
+	int error = 127;
 
 	close_all_fd_except(cmd, i, size);
 	execve(cmd[i].arg[0], cmd[i].arg, cmd[i].env);
 	if (ft_strchr(cmd[i].arg[0], '/'))
-		is_a_directory(cmd, i, size);
+		error = is_a_directory(cmd, i, size);
 	else
 	{
 		paths = create_paths_tab(&cmd[i]);
@@ -105,7 +108,7 @@ int	exec_cmd(t_commands *cmd, int i, int size)
 	close(cmd[i].fd_out);
 	free_the_tab(cmd[i].env);
 	free_struct_cmd(cmd, size);
-	exit(127);
+	exit(error);
 }
 
 int execute_in_child_process(t_commands *cmd, int i, int size, int *fd_tmp)
@@ -136,11 +139,6 @@ int	ft_strcmp(char *s1, char *s2)
 	return (s1[i] - s2[i]);
 }
 
-char	**ft_exit(t_commands *cmd, int *exit_status)
-{
-	return (NULL);
-}
-
 char	**execute_in_main_process(t_commands *cmd, int size, int *exit_status)
 {
 	char **env;
@@ -148,14 +146,14 @@ char	**execute_in_main_process(t_commands *cmd, int size, int *exit_status)
 	env = cmd->env;
 	if (!ft_strcmp(cmd->arg[0], "echo"))
 		ft_echo(cmd, exit_status);
-	else if (size == 1 && !strcmp(cmd->arg[0], "cd"))
-		env = ft_cd(cmd, exit_status);
+	else if (!strcmp(cmd->arg[0], "cd"))
+		env = ft_cd(cmd, size, exit_status);
 	else if (!ft_strcmp(cmd->arg[0], "pwd"))
-		ft_pwd();
+		ft_pwd(cmd, exit_status);
 	else if (!ft_strcmp(cmd->arg[0], "export"))
 		env = ft_export(cmd, size, exit_status);
-	else if (size == 1 && !ft_strcmp(cmd->arg[0], "unset"))
-		env = ft_unset(cmd, exit_status);
+	else if (!ft_strcmp(cmd->arg[0], "unset"))
+		env = ft_unset(cmd, size, exit_status);
 	else if (!ft_strcmp(cmd->arg[0], "env"))
 		ft_env(cmd, exit_status);
 	else if (size == 1 && !strcmp(cmd->arg[0], "exit"))
@@ -175,11 +173,12 @@ int	is_a_buildins(char **arg)
 	return (0);
 }
 
-char	**execute_builtins(t_commands *cmd, int size, int *exit_status)
+char	**execute_builtins(t_commands *cmd, int size, int *exit_status, int *fork_pid)
 {
 	int		fd_tmp[2];
 	char	**env;
 
+	*fork_pid = -42;
 	fd_tmp[0] = dup(STDIN_FILENO);
 	fd_tmp[1] =  dup(STDOUT_FILENO);
 	dup2(cmd->fd_in, STDIN_FILENO);
@@ -200,7 +199,10 @@ int	execute_command(t_commands *cmd, int i, int size, int *exit_status)
 	int	fd_tmp[2];
 
 	if (!cmd[i].arg || !cmd[i].arg[0])
+	{
+		*exit_status = 0;
 		return (-42);
+	}
 	fd_tmp[0] = dup(STDIN_FILENO);
 	fd_tmp[1] =  dup(STDOUT_FILENO);
 	dup2(cmd[i].fd_in, STDIN_FILENO);
@@ -217,17 +219,17 @@ int	execute_command(t_commands *cmd, int i, int size, int *exit_status)
 
 int	wait_for_all_process(int fork_pid, int *exit_status)
 {
-	int status = 0;
+	int status;
+
+	status = 0;
 	if (fork_pid != -42)
+	{
 		waitpid(fork_pid, &status, 0);
-	if (fork_pid != -42 && WIFEXITED(status))
-	{
-		*exit_status = WEXITSTATUS(status);
+		if (WIFEXITED(status))
+			*exit_status = WEXITSTATUS(status);
 	}
-	else if (fork_pid != -42 && g_sig_flag)
-	{
-		*exit_status = 69;
-	}
+	if (g_sig_flag)
+		*exit_status = g_sig_flag;
 	while (waitpid(-1, NULL, 0) > 0)
 		;
 	g_sig_flag = 0;
@@ -236,22 +238,17 @@ int	wait_for_all_process(int fork_pid, int *exit_status)
 
 char	**execution(t_commands *cmd, int size, int *exit_status)
 {
-	int i = 0;
+	int i;
 	int fork_pid;
 
+	i = 0;
 	fork_pid = -42;
-	if (!cmd)
-		return (NULL);
 	while(i < size)
 	{
 		if (cmd[i].fd_in != -1 && cmd[i].fd_out != -1)
 		{
 			if (is_a_buildins(cmd[i].arg))
-			{
-				*exit_status = 0;
-				cmd->env = execute_builtins(&cmd[i], size, exit_status);
-				fork_pid = -42;
-			}
+				cmd->env = execute_builtins(&cmd[i], size, exit_status, &fork_pid);
 			else
 				fork_pid = execute_command(cmd, i, size, exit_status);
 		}

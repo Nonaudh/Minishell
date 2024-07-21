@@ -12,10 +12,17 @@
 
 #include "../../inc/minishell.h"
 
-int	ft_pwd(void)
+int	ft_pwd(t_commands *cmd, int *exit_status)
 {
 	char	cwd[1024];
 
+	*exit_status = 0;
+	if (check_option(cmd->arg))
+	{	
+		error_option(cmd, exit_status, 2);
+		return (0);
+	}
+		
 	if (getcwd(cwd, sizeof(cwd)))
 	{
 		ft_putendl_fd(cwd, 1);

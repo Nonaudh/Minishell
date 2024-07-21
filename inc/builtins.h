@@ -1,7 +1,7 @@
 #ifndef BUILTINS_H
 # define BUILTINS_H
 
-char	**ft_cd(t_commands *cmd, int *exit_status);
+char	**ft_cd(t_commands *cmd, int size, int *exit_status);
 char	**switch_pwd_env(char **env);
 char	**update_pwd(char **env);
 char	*join_with_new_pwd(char *str);
@@ -18,10 +18,12 @@ int	is_n_option(char *arg);
 
 int	ft_env(t_commands *cmd, int *exit_status);
 
+char	**ft_exit(t_commands *cmd, int *exit_status);
+
 char    **ft_export(t_commands *cmd, int size, int *exit_status);
 int	print_sort_env(char **env);
-char	**add_env_variable(t_commands *cmd, int *exit_status);
-char	**add_arg_to_env(char *str, char **env, int *exit_status);
+char	**add_env_variable(t_commands *cmd, int size, int *exit_status);
+char	**add_arg_to_env(char *str, char **env, int size, int *exit_status);
 char **create_arg(char *str, char **env_tmp);
 char	*create_without_plus(char *str);
 char	**realloc_and_copy_env(char **env_tmp, int size);
@@ -35,10 +37,14 @@ void	print_tab_int(int *tab, int size, char **env);
 void	print_env_value(char *str);
 int	cmp_env(char *s1, char *s2);
 
-int	ft_pwd(void);
+int	ft_pwd(t_commands *cmd, int *exit_status);
 
-char	**ft_unset(t_commands *cmd, int *exit_status);
+char	**ft_unset(t_commands *cmd, int size, int *exit_status);
 char	**try_to_unset(t_commands *cmd, int x, int *exit_status);
 char	**erase_env(char **env_tmp, int i);
+
+char	**error_option(t_commands *cmd, int *exit_status, int error_code);
+int	    check_option(char **arg);
+
 
 # endif
