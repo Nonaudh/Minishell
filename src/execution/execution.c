@@ -85,6 +85,12 @@ void	error_cmd_not_found(char *cmd)
 	ft_putstr_fd(": command not found\n", 2);
 }
 
+void	print_fd(t_commands *cmd)
+{
+	ft_putendl_fd(ft_itoa(cmd->fd_in), 2);
+	ft_putendl_fd(ft_itoa(cmd->fd_out), 2);
+}
+
 int	exec_cmd(t_commands *cmd, int i, int size)
 {
 	char **paths;
@@ -92,6 +98,9 @@ int	exec_cmd(t_commands *cmd, int i, int size)
 	int error = 127;
 
 	close_all_fd_except(cmd, i, size);
+
+	print_fd(&cmd[i]);
+
 	execve(cmd[i].arg[0], cmd[i].arg, cmd[i].env);
 	if (ft_strchr(cmd[i].arg[0], '/'))
 		error = is_a_directory(cmd, i, size);
@@ -120,8 +129,10 @@ int execute_in_child_process(t_commands *cmd, int i, int size, int *fd_tmp)
 		exit (EXIT_FAILURE);
 	if (fork_pid == 0)
 	{
-		close(fd_tmp[0]);
-		close(fd_tmp[1]);
+		dup2(cmd[i].fd_in, STDIN_FILENO);
+		dup2(cmd[i].fd_out, STDOUT_FILENO);
+		// close(fd_tmp[0]);
+		// close(fd_tmp[1]);
 		exec_cmd(cmd, i, size);
 	}
 	return (fork_pid);
@@ -158,6 +169,8 @@ char	**execute_in_main_process(t_commands *cmd, int size, int *exit_status)
 		ft_env(cmd, exit_status);
 	else if (size == 1 && !strcmp(cmd->arg[0], "exit"))
 		env = ft_exit(cmd, exit_status);
+	if (env != cmd->env)
+		free_the_tab(cmd->env);
 	return (env);
 }
 
@@ -203,35 +216,53 @@ int	execute_command(t_commands *cmd, int i, int size, int *exit_status)
 		*exit_status = 0;
 		return (-42);
 	}
-	fd_tmp[0] = dup(STDIN_FILENO);
-	fd_tmp[1] =  dup(STDOUT_FILENO);
-	dup2(cmd[i].fd_in, STDIN_FILENO);
-	dup2(cmd[i].fd_out, STDOUT_FILENO);
+	// fd_tmp[0] = dup(STDIN_FILENO);
+	// fd_tmp[1] =  dup(STDOUT_FILENO);
+	// dup2(cmd[i].fd_in, STDIN_FILENO);
+	// dup2(cmd[i].fd_out, STDOUT_FILENO);
 
 	fork_pid = execute_in_child_process(cmd, i, size, fd_tmp);
 
-	dup2(fd_tmp[0], STDIN_FILENO);
-	dup2(fd_tmp[1], STDOUT_FILENO);
-	close(fd_tmp[0]);
-	close (fd_tmp[1]);
+	// dup2(fd_tmp[0], STDIN_FILENO);
+	// dup2(fd_tmp[1], STDOUT_FILENO);
+	// close(fd_tmp[0]);
+	// close (fd_tmp[1]);
 	return (fork_pid);
 }
 
-int	wait_for_all_process(int fork_pid, int *exit_status)
+int	wait_for_all_process(t_commands *cmd, int *fork_pid, int size, int *exit_status)
 {
 	int status;
+	int	i;
 
+	i = 0;
 	status = 0;
-	if (fork_pid != -42)
+	if (fork_pid[size - 1] != -42)
 	{
-		waitpid(fork_pid, &status, 0);
+		waitpid(fork_pid[size - 1], &status, 0);
 		if (WIFEXITED(status))
 			*exit_status = WEXITSTATUS(status);
 	}
 	if (g_sig_flag)
 		*exit_status = g_sig_flag;
-	while (waitpid(-1, NULL, 0) > 0)
-		;
+
+	while (i < (size - 1))
+	{
+		if (fork_pid[i] != -42)
+			waitpid(fork_pid[i], NULL, 0);
+		if (cmd[i].fd_in != STDIN_FILENO && cmd[i].fd_in != -1)
+			close(cmd[i].fd_in);
+		if (cmd[i].fd_out != STDOUT_FILENO && cmd[i].fd_out != -1)
+			close(cmd[i].fd_out);
+		i++;
+	}
+	if (cmd[i].fd_in != STDIN_FILENO && cmd[i].fd_in != -1)
+		close(cmd[size].fd_in);
+	if (cmd[i].fd_out != STDOUT_FILENO && cmd[i].fd_out != -1)
+		close(cmd[size].fd_out);
+
+	// while (waitpid(-1, NULL, 0) > 0)
+	// 	;
 	g_sig_flag = 0;
 	return (0);
 }
@@ -239,27 +270,28 @@ int	wait_for_all_process(int fork_pid, int *exit_status)
 char	**execution(t_commands *cmd, int size, int *exit_status)
 {
 	int i;
-	int fork_pid;
+	int *fork_pid;
 
 	i = 0;
-	fork_pid = -42;
+	fork_pid = malloc(sizeof(int) * size);
+	ft_memset(fork_pid, -42, size);
 	while(i < size)
 	{
 		if (cmd[i].fd_in != -1 && cmd[i].fd_out != -1)
 		{
 			if (is_a_buildins(cmd[i].arg))
-				cmd->env = execute_builtins(&cmd[i], size, exit_status, &fork_pid);
+				cmd->env = execute_builtins(&cmd[i], size, exit_status, &fork_pid[i]);
 			else
-				fork_pid = execute_command(cmd, i, size, exit_status);
+				fork_pid[i] = execute_command(cmd, i, size, exit_status);
 		}
 		else
 		{
 			*exit_status = 1;
-			fork_pid = -42;
+			fork_pid[i] = -42;
 		}
 		i++;
 	}
-	close_all_fd_except(cmd, -1, size);
-	wait_for_all_process(fork_pid, exit_status);
+	//close_all_fd_except(cmd, -1, size);
+	wait_for_all_process(cmd, fork_pid, size, exit_status);
 	return (cmd->env);
 }

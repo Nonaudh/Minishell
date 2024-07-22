@@ -74,6 +74,8 @@ void	set_signal_here_doc(void);
 int	open_here_doc(char **lex, t_commands *cmd, char **env, int *exit_status);
 
 int count_cmd(char **lex);
+int	end_of_env_var(char *str);
+int	not_a_env_var(char *str);
 
 char	**execution(t_commands *cmd, int size, int *exit_status);
 int	execute_command(t_commands *cmd, int i, int size, int *exit_status);

@@ -28,6 +28,7 @@ void	set_signal_exec(void)
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGQUIT, &sa, NULL);
 	sigaction(SIGPIPE, &sa2, NULL);
+	// sigaction(SIGTTIN, &sa2, NULL);
 }
 
 
@@ -38,7 +39,10 @@ char	**minishell(char *line, char **env, int *exit_status)
 	t_commands *cmd;
 	
 	if (!line)
+	{
+		free_the_tab(env);
 		return (NULL);
+	}
 	lex = lexing(line, env, exit_status);
 	size = count_cmd(lex);
 	if (!size)
@@ -117,6 +121,5 @@ int main(int argc, char **argv, char **env_tmp)
 	}
 	rl_clear_history();
 	free_the_tab(env);
-	ft_putstr_fd("exit\n", 2);
 	return (exit_status);
 }

@@ -67,7 +67,8 @@ char	*join_with_pwd(char **env, char *str)
 
 char	**put_pwd_in_old_pwd(char **env)
 {
-	int	i;
+	int		i;
+	char	*str;
 
 	i = 0;
 	while (env[i] && ft_strncmp(env[i], "OLDPWD=", 7))
@@ -79,8 +80,19 @@ char	**put_pwd_in_old_pwd(char **env)
 		if (!env[i])
 			return (NULL);
 	}
+	else
+	{
+		str = ft_getenv("PWD", env);
+		if (str)
+		{
+			str = ft_strjoin("OLDPWD=", str);
+			env = create_arg(str, env);
+			free(str);
+		}
+	}
 	return (env);
 }
+
 char	*join_with_new_pwd(char *str)
 {
 	char	cwd[1024];

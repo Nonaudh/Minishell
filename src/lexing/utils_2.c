@@ -30,3 +30,21 @@ int	env_variable_detected(char *str)
 		return (1);
 	return (0);
 }
+
+int	not_a_env_var(char *str)
+{
+	int	i;
+
+	i = 0;
+	return (str[i] != '$' || ((!ft_isprint(str[i + 1]) || str[i + 1] == 32)|| str[i + 1] == '\"' || str[i + 1] == '\''));
+}
+
+int	end_of_env_var(char *str)
+{
+	int	i;
+
+	i = 1;
+	while (ft_isprint(str[i]) && str[i] != 32 && str[i] != '\'' && str[i] != '\"' && str[i - 1] != '?' && str[i] != '$')
+		i++;
+	return (i);
+}

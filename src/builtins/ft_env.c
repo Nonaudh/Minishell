@@ -4,6 +4,7 @@ int	check_argument_env(char **arg)
 {
 	if (arg[1])
 		return (1);
+	return (0);
 }
 
 char	**error_argument(t_commands *cmd, int *exit_status, int error_code)
