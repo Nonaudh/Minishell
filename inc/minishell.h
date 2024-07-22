@@ -11,6 +11,7 @@ typedef enum e_token
 	LESSLESS,
 	PIPE,
 	T_NEWLINE,
+	T_EMPTY,
 } t_token;
 
 typedef struct s_commands
@@ -78,5 +79,7 @@ char	**execution(t_commands *cmd, int size, int *exit_status);
 int	execute_command(t_commands *cmd, int i, int size, int *exit_status);
 char	*ft_getenv(char *str, char **env);
 void	free_struct_cmd(t_commands *cmd, int size);
+void	error_ambiguous_redirect(char *str, int *exit_status);
+void	error_open_file(char *str, int *exit_status);
 
 # endif

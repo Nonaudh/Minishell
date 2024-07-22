@@ -69,11 +69,16 @@ int	less_infile(char **lex, t_commands *cmd, int *exit_status)
 {
 	if (cmd->fd_in != STDIN_FILENO)
 		close(cmd->fd_in);
+	if (lex[1][0] == T_EMPTY)
+	{
+		error_ambiguous_redirect(lex[1], exit_status);
+		cmd->fd_out = -1;
+		return(until_pipe_or_newline(lex));
+	}
 	cmd->fd_in = open(lex[1], O_RDONLY);
 	if (cmd->fd_in == -1)
 	{
-		*exit_status = 1;
-		perror(lex[1]);
+		error_open_file(lex[1], exit_status);
 		return(until_pipe_or_newline(lex));
 	}
 	if (lex[0][0] == LESSLESS)
@@ -155,7 +160,6 @@ char	*here_doc_infile(char **lex, t_commands *cmd, char **env, int *exit_status)
 	write_here_doc(&lex[1], env, exit_status, hd_name);
 	if (g_sig_flag)
 	{
-		//g_sig_flag = 0;
 		dup2(fdin_tmp, STDIN_FILENO);
 		if (unlink(hd_name))
 			perror("unlike");
@@ -163,26 +167,39 @@ char	*here_doc_infile(char **lex, t_commands *cmd, char **env, int *exit_status)
 		return (lex[1]);
 	}
 	close(fdin_tmp);
-	// if (cmd->fd_in != STDIN_FILENO)
-	// 	close(cmd->fd_in);
-	// cmd->fd_in = open("/tmp/here_doc", O_RDONLY);
-	// if (cmd->fd_in == -1)
-	// 	perror("here_doc_infile");
-	// else if (unlink("/tmp/here_doc"))
-	// 	perror("unlike");
 	free(lex[1]);
 	return (ft_strdup(hd_name));
+}
+
+void	error_ambiguous_redirect(char *str, int *exit_status)
+{
+	*exit_status = 1;
+	ft_putstr_fd("minishell: ", 2);
+	ft_putstr_fd("$FILE", 2);
+	ft_putstr_fd(": ambiguous redirect\n", 2);
+}
+
+void	error_open_file(char *str, int *exit_status)
+{
+	*exit_status = 1;
+	ft_putstr_fd("minishell: ", 2);
+	perror(str);
 }
 
 int	great_outfile(char **lex, t_commands *cmd, int *exit_status)
 {
 	if (cmd->fd_out != STDOUT_FILENO)
 		close(cmd->fd_out);
+	if (lex[1][0] == T_EMPTY)
+	{
+		error_ambiguous_redirect(lex[1], exit_status);
+		cmd->fd_out = -1;
+		return(until_pipe_or_newline(lex));
+	}
 	cmd->fd_out = open(lex[1], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (cmd->fd_out == -1)
 	{
-		*exit_status = 1;
-		perror(lex[1]);
+		error_open_file(lex[1], exit_status);
 		return(until_pipe_or_newline(lex));
 	}
 	return (2);
@@ -192,11 +209,16 @@ int	great_great_outfile(char **lex, t_commands *cmd, int *exit_status)
 {
 	if (cmd->fd_out != STDOUT_FILENO)
 		close(cmd->fd_out);
+	if (lex[1][0] == T_EMPTY)
+	{
+		error_ambiguous_redirect(lex[1], exit_status);
+		cmd->fd_out = -1;
+		return(until_pipe_or_newline(lex));
+	}
 	cmd->fd_out = open(lex[1], O_CREAT | O_APPEND | O_WRONLY, 0644);
 	if (cmd->fd_out == -1)
 	{
-		*exit_status = 1;
-		perror(lex[1]);
+		error_open_file(lex[1], exit_status);
 		return(until_pipe_or_newline(lex));
 	}
 	return (2);
@@ -214,7 +236,7 @@ int	is_an_argument(char **lex, t_commands *cmd)
 			return (-1);
 		cmd->arg[i] = NULL;
 	}
-	if (!lex[0][0])
+	if (lex[0][0] == T_EMPTY)
 		return (1);
 	while (cmd->arg[i])
 		i++;
@@ -229,8 +251,6 @@ int	put_in_the_struct(char **lex, t_commands *cmd, int *exit_status)
 {
 	if (lex[0][0] == LESS || lex[0][0] == LESSLESS)
 		return (less_infile(lex, cmd, exit_status));
-	// if (lex[0][0] == LESSLESS)
-	// 	return (2);
 	if (lex[0][0] == GREAT)
 		return (great_outfile(lex, cmd, exit_status));
 	if (lex[0][0] == GREATGREAT)
@@ -363,8 +383,6 @@ t_commands  *parsing(char **lex, char **env, int size, int *exit_status)
 {
 	t_commands *cmd;
 	
-	// if (!size)
-	// 	return (NULL);
 	cmd = create_struct_cmd(lex, env, size, exit_status);
 	return (cmd);
 }

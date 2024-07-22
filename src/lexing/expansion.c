@@ -147,7 +147,14 @@ char	**expand_lex(char **lex, char **env, int *exit_status)
 		if (i == 0 || lex[i - 1][0] != LESSLESS)
 		{
 			if (env_variable_detected(lex[i]))
+			{
 				lex[i] = expand_env(lex[i], env, exit_status);
+				if (!lex[i][0])
+				{
+					free(lex[i]);
+					lex[i] = create_token(T_EMPTY);
+				}
+			}
 			lex[i] = unquote(lex[i]);
 			if (!lex[i])
 				return (NULL);
