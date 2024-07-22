@@ -99,7 +99,7 @@ int	exec_cmd(t_commands *cmd, int i, int size)
 
 	close_all_fd_except(cmd, i, size);
 
-	print_fd(&cmd[i]);
+	//print_fd(&cmd[i]);
 
 	execve(cmd[i].arg[0], cmd[i].arg, cmd[i].env);
 	if (ft_strchr(cmd[i].arg[0], '/'))
@@ -129,8 +129,8 @@ int execute_in_child_process(t_commands *cmd, int i, int size, int *fd_tmp)
 		exit (EXIT_FAILURE);
 	if (fork_pid == 0)
 	{
-		dup2(cmd[i].fd_in, STDIN_FILENO);
-		dup2(cmd[i].fd_out, STDOUT_FILENO);
+		// dup2(cmd[i].fd_in, STDIN_FILENO);
+		// dup2(cmd[i].fd_out, STDOUT_FILENO);
 		// close(fd_tmp[0]);
 		// close(fd_tmp[1]);
 		exec_cmd(cmd, i, size);
@@ -216,18 +216,32 @@ int	execute_command(t_commands *cmd, int i, int size, int *exit_status)
 		*exit_status = 0;
 		return (-42);
 	}
-	// fd_tmp[0] = dup(STDIN_FILENO);
-	// fd_tmp[1] =  dup(STDOUT_FILENO);
-	// dup2(cmd[i].fd_in, STDIN_FILENO);
-	// dup2(cmd[i].fd_out, STDOUT_FILENO);
+	fd_tmp[0] = dup(STDIN_FILENO);
+	fd_tmp[1] =  dup(STDOUT_FILENO);
+	dup2(cmd[i].fd_in, STDIN_FILENO);
+	dup2(cmd[i].fd_out, STDOUT_FILENO);
 
 	fork_pid = execute_in_child_process(cmd, i, size, fd_tmp);
 
-	// dup2(fd_tmp[0], STDIN_FILENO);
-	// dup2(fd_tmp[1], STDOUT_FILENO);
-	// close(fd_tmp[0]);
-	// close (fd_tmp[1]);
+	dup2(fd_tmp[0], STDIN_FILENO);
+	dup2(fd_tmp[1], STDOUT_FILENO);
+	close(fd_tmp[0]);
+	close (fd_tmp[1]);
 	return (fork_pid);
+}
+
+void	close_fd_of_this_cmd(t_commands *cmd)
+{
+	if (cmd->fd_in != STDIN_FILENO && cmd->fd_in != -1)
+	{
+		if (close(cmd->fd_in))
+			perror("fd_in");				
+	}
+	if (cmd->fd_out != STDOUT_FILENO && cmd->fd_out != -1)
+	{
+		if (close(cmd->fd_out))
+			perror("fd_out");
+	}
 }
 
 int	wait_for_all_process(t_commands *cmd, int *fork_pid, int size, int *exit_status)
@@ -235,8 +249,8 @@ int	wait_for_all_process(t_commands *cmd, int *fork_pid, int size, int *exit_sta
 	int status;
 	int	i;
 
-	i = 0;
 	status = 0;
+	close_all_fd_except(cmd, -1, size);
 	if (fork_pid[size - 1] != -42)
 	{
 		waitpid(fork_pid[size - 1], &status, 0);
@@ -245,22 +259,49 @@ int	wait_for_all_process(t_commands *cmd, int *fork_pid, int size, int *exit_sta
 	}
 	if (g_sig_flag)
 		*exit_status = g_sig_flag;
+	while (waitpid(-1, NULL, 0) > 0)
+		;
 
-	while (i < (size - 1))
-	{
-		if (fork_pid[i] != -42)
-			waitpid(fork_pid[i], NULL, 0);
-		if (cmd[i].fd_in != STDIN_FILENO && cmd[i].fd_in != -1)
-			close(cmd[i].fd_in);
-		if (cmd[i].fd_out != STDOUT_FILENO && cmd[i].fd_out != -1)
-			close(cmd[i].fd_out);
-		i++;
-	}
-	if (cmd[i].fd_in != STDIN_FILENO && cmd[i].fd_in != -1)
-		close(cmd[size].fd_in);
-	if (cmd[i].fd_out != STDOUT_FILENO && cmd[i].fd_out != -1)
-		close(cmd[size].fd_out);
 
+	// i = size - 1;
+	// status = 0;
+	// if (fork_pid[i] != -42)
+	// {
+	// 	waitpid(fork_pid[i], &status, 0);
+	// 	if (WIFEXITED(status))
+	// 		*exit_status = WEXITSTATUS(status);
+	// }
+	// close_fd_of_this_cmd(&cmd[i]);
+	// if (g_sig_flag)
+	// 	*exit_status = g_sig_flag;
+	// i--;
+	// while (i >= 0)
+	// {
+	// 	if (fork_pid[i] != -42)
+	// 		waitpid(fork_pid[i], NULL, 0);
+	// 	close_fd_of_this_cmd(&cmd[i]);
+	// 	i--;
+	// }
+
+	// close_fd_of_this_cmd(&cmd[size - 1]);
+	// waitpid(fork_pid[size - 1], NULL, 0);
+	// i = 0;
+	// while (i < (size - 1))
+	// {
+	// 	close_fd_of_this_cmd(&cmd[i]);
+	// 	waitpid(fork_pid[i], NULL, 0);
+	// 	i++;
+	// }
+
+	// i = size - 1;
+	// while (i >= 0)
+	// {
+	// 	waitpid(fork_pid[i], NULL, 0);
+	// 	close_fd_of_this_cmd(&cmd[i]);
+	// 	i--;
+	// }
+
+	// close_all_fd_except(cmd, -1, size);
 	// while (waitpid(-1, NULL, 0) > 0)
 	// 	;
 	g_sig_flag = 0;

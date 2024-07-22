@@ -28,7 +28,6 @@ void	set_signal_exec(void)
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGQUIT, &sa, NULL);
 	sigaction(SIGPIPE, &sa2, NULL);
-	// sigaction(SIGTTIN, &sa2, NULL);
 }
 
 
