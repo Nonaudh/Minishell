@@ -93,4 +93,7 @@ char	*ft_getenv(char *str, char **env);
 void	free_struct_cmd(t_cmd *cmd, int size);
 void	error_open_file(char *str, int *ex_st);
 
+void	set_signal_main(void);
+void	handle_sig_main(int signal);
+
 #endif

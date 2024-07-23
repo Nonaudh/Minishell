@@ -47,10 +47,8 @@ int	count_cmd(char **lex)
 int	nb_of_arg(char **lex, int x)
 {
 	int	count;
-	int	i;
 
 	count = 0;
-	i = 0;
 	while (lex[x][0] != PIPE && lex[x][0] != T_NEWLINE)
 	{
 		if (is_a_token(lex[x][0]))

@@ -14,9 +14,6 @@
 
 int	check_option(char **arg)
 {
-	int	i;
-
-	i = 0;
 	if (arg[1] && arg[1][0] == '-' && arg[1][1])
 		return (1);
 	return (0);

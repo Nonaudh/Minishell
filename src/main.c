@@ -105,12 +105,7 @@ int	check_signal(int exit_status)
 	return (exit_status);
 }
 
-void	void_unused_var(int argc, char **argv)
-{
-	(void)argc;
-	(void)argv;
-	return ;
-}
+
 
 int	main(int argc, char **argv, char **env_tmp)
 {
@@ -120,7 +115,7 @@ int	main(int argc, char **argv, char **env_tmp)
 
 	line = (void *)1;
 	exit_status = 0;
-	void_unused_var(argc, argv);
+	(void)argv;
 	env = ft_str_tab_dup(env_tmp);
 	if (!env)
 		return (1);

@@ -18,6 +18,10 @@ void	signal_here_doc(int signal)
 	{
 		g_sig_flag = 130;
 		ft_putstr_fd("\n", 1);
+
+		// rl_on_new_line();
+		// rl_replace_line("", 0);
+		// rl_redisplay();
 		close (0);
 	}
 }

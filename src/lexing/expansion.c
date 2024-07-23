@@ -58,10 +58,8 @@ char	*unquote(char *str)
 
 char	*add_env_value(char *little, char **env, int *ex_st)
 {
-	int		x;
 	char	*env_value;
 
-	x = 0;
 	if (!little)
 		return (NULL);
 	if (ft_strlen(little) == 1 && little[0] == '?')

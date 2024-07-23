@@ -58,10 +58,8 @@ void	print_env_value(char *str)
 void	print_tab_int(int *tab, int size, char **env)
 {
 	int	i;
-	int	x;
 
 	i = 0;
-	x = 0;
 	while (i < size)
 	{
 		print_env_value(env[tab[i]]);

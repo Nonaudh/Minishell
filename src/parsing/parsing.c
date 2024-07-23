@@ -76,13 +76,13 @@ t_cmd	*create_struct_cmd(char **lex, char **env, int size, int *ex_st)
 	if (!cmd)
 		return (NULL);
 	set_struct_to_default(cmd, env, size);
-	if (!open_here_doc(lex, cmd, env, ex_st))
-		cmd = fill_the_struct(lex, cmd, size, ex_st);
-	else
+	if (open_here_doc(lex, cmd, env, ex_st))
 	{
 		free_struct_cmd(cmd, size);
-		cmd = NULL;
+		return (NULL);
 	}
+	else
+		cmd = fill_the_struct(lex, cmd, size, ex_st);
 	return (cmd);
 }
 
