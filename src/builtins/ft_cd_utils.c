@@ -1,31 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_pwd.c                                           :+:      :+:    :+:   */
+/*   ft_cd_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bdany <bdany@student.42.fr>                +#+  +:+       +#+        */
+/*   By: ahuge <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/06/13 16:36:30 by bdany             #+#    #+#             */
-/*   Updated: 2024/07/23 17:57:23 by ahuge            ###   ########.fr       */
+/*   Created: 2024/07/23 17:56:25 by ahuge             #+#    #+#             */
+/*   Updated: 2024/07/23 17:56:27 by ahuge            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../inc/minishell.h"
 
-int	ft_pwd(t_cmd *cmd, int *ex_st)
+int	count_arg(char **arg)
 {
-	char	cwd[1024];
+	int	i;
 
-	*ex_st = 0;
-	if (check_option(cmd->arg))
+	i = 0;
+	while (arg[i])
 	{
-		error_option(cmd, ex_st, 2);
-		return (0);
+		i++;
 	}
-	if (getcwd(cwd, sizeof(cwd)))
-	{
-		ft_putendl_fd(cwd, 1);
-		return (0);
-	}
-	return (1);
+	return (i);
+}
+
+void	error_no_such_file(char *arg, int *ex_st)
+{
+	*ex_st = 1;
+	ft_putstr_fd("minishell: cd: ", 2);
+	perror(arg);
+}
+
+void	error(char *str, int *ex_st)
+{
+	*ex_st = 1;
+	ft_putstr_fd(str, 2);
 }

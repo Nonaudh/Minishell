@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_echo.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ahuge <marvin@42.fr>                       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/23 17:56:33 by ahuge             #+#    #+#             */
+/*   Updated: 2024/07/23 17:56:35 by ahuge            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../inc/minishell.h"
 
 int	is_n_option(char *arg)
@@ -47,12 +59,12 @@ void	print_with_new(char **arg)
 	ft_putstr_fd("\n", 1);
 }
 
-int	ft_echo(t_commands *cmd, int *exit_status)
+int	ft_echo(t_cmd *cmd, int *ex_st)
 {
 	int	i;
 
 	i = 1;
-	*exit_status = 0;
+	*ex_st = 0;
 	while (cmd->arg[i] && is_n_option(cmd->arg[i]))
 		i++;
 	if (i != 1)

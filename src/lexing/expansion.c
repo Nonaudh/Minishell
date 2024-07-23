@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   expansion.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: bdany <bdany@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/23 14:08:33 by bdany             #+#    #+#             */
+/*   Updated: 2024/07/23 14:20:23 by bdany            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../inc/minishell.h"
 
 char	*erase_quote_and_cpy(char *lex, char *str)
@@ -41,22 +53,21 @@ char	*unquote(char *str)
 		return (NULL);
 	lex = erase_quote_and_cpy(lex, str);
 	free(str);
-	// ft_printf("q; %s\n", lex);
-	// return (NULL);
 	return (lex);
 }
 
-char	*add_env_value(char *little, char **env, int *exit_status)
+char	*add_env_value(char *little, char **env, int *ex_st)
 {
+	int		x;
 	char	*env_value;
-	int x = 0;
 
+	x = 0;
 	if (!little)
-		return(NULL);
+		return (NULL);
 	if (ft_strlen(little) == 1 && little[0] == '?')
 	{
 		free(little);
-		return(ft_itoa(*exit_status));
+		return (ft_itoa(*ex_st));
 	}
 	env_value = ft_strdup(ft_getenv(little, env));
 	free(little);
@@ -65,7 +76,7 @@ char	*add_env_value(char *little, char **env, int *exit_status)
 	return (ft_strdup("\0"));
 }
 
-char	*expand_env(char *str, char **env, int *exit_status)
+char	*expand_env(char *str, char **env, int *ex_st)
 {
 	int		i;
 	char	*lex;
@@ -86,24 +97,25 @@ char	*expand_env(char *str, char **env, int *exit_status)
 			start = i + 1;
 			i += end_of_env_var(str + i);
 			lex = ft_strjoin_dup_frees(lex, add_env_value
-			(ft_substr(str, start, i - start), env, exit_status));
+					(ft_substr(str, start, i - start), env, ex_st));
 		}
 	}
 	free(str);
 	return (lex);
 }
 
-char	**expand_lex(char **lex, char **env, int *exit_status)
+char	**expand_lex(char **lex, char **env, int *ex_st)
 {
-	int i = 0;
+	int	i;
 
+	i = 0;
 	while (lex[i])
 	{
 		if (i == 0 || lex[i - 1][0] != LESSLESS)
 		{
 			if (env_variable_detected(lex[i]))
 			{
-				lex[i] = expand_env(lex[i], env, exit_status);
+				lex[i] = expand_env(lex[i], env, ex_st);
 				if (!lex[i][0])
 				{
 					free(lex[i]);

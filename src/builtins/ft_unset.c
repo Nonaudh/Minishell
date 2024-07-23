@@ -1,8 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_unset.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ahuge <marvin@42.fr>                       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/23 17:57:29 by ahuge             #+#    #+#             */
+/*   Updated: 2024/07/23 17:57:31 by ahuge            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../inc/minishell.h"
 
 char	**erase_env(char **env_tmp, int i)
 {
-	int	x;
+	int		x;
 	char	**env;
 
 	x = 0;
@@ -18,17 +30,17 @@ char	**erase_env(char **env_tmp, int i)
 			env[x] = ft_strdup(env_tmp[x]);
 			if (!env[x])
 				return (NULL);
-			x++;	
+			x++;
 		}
 	}
 	env[x] = NULL;
 	return (env);
 }
 
-char	**try_to_unset(t_commands *cmd, int x, int *exit_status)
+char	**try_to_unset(t_cmd *cmd, int x)
 {
-	int	i;
-	char **new_env;
+	int		i;
+	char	**new_env;
 
 	i = 0;
 	while (cmd->env[i] && search_arg_in_env(cmd->arg[x], cmd->env[i]))
@@ -42,19 +54,19 @@ char	**try_to_unset(t_commands *cmd, int x, int *exit_status)
 	return (cmd->env);
 }
 
-char	**ft_unset(t_commands *cmd, int size, int *exit_status)
+char	**ft_unset(t_cmd *cmd, int size, int *ex_st)
 {
 	int	x;
 
 	x = 1;
-	*exit_status = 0;
+	*ex_st = 0;
 	if (check_option(cmd->arg))
-		return (error_option(cmd, exit_status, 2));
+		return (error_option(cmd, ex_st, 2));
 	if (size > 1)
 		return (cmd->env);
 	while (cmd->env && cmd->arg[x])
 	{
-		cmd->env = try_to_unset(cmd, x, exit_status);
+		cmd->env = try_to_unset(cmd, x);
 		x++;
 	}
 	return (cmd->env);

@@ -1,33 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   utils.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: bdany <bdany@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/23 14:09:12 by bdany             #+#    #+#             */
+/*   Updated: 2024/07/23 14:29:10 by bdany            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../inc/minishell.h"
 
-void	print_tab(char **tab)
-{
-	int i = 0;
-
-	while (tab[i])
-	{
-		if (ft_ttoa(tab[i][0]))
-			printf("`%s'\n", ft_ttoa(tab[i][0]));
-		else
-			printf("%s\n", tab[i]);
-		i++;
-	}
-}
-
-void	free_the_tab(char **tab)
-{
-	int i = 0;
-
-	if (!tab)
-		return ;
-	while (tab[i])
-	{
-		free(tab[i]);
-		i++;
-	}
-	free(tab);
-}
-void	free_struct_cmd(t_commands *cmd, int size)
+void	free_struct_cmd(t_cmd *cmd, int size)
 {
 	int	i;
 
@@ -43,12 +28,12 @@ void	free_struct_cmd(t_commands *cmd, int size)
 	free(cmd);
 }
 
-
 char	**ft_str_tab_dup(char **tab1)
 {
-	int	i = 0;
+	int		i;
 	char	**tab2;
 
+	i = 0;
 	if (!tab1)
 		return (NULL);
 	while (tab1[i])
@@ -77,7 +62,7 @@ char	*ft_strjoin_dup_free_s1(char const *s1, char const *s2)
 	else
 	{
 		str = ft_strjoin(s1, s2);
-		free((char *)s1);		
+		free((char *)s1);
 	}
 	return (str);
 }
@@ -107,7 +92,7 @@ char	*ft_strjoin_dup_frees(char const *s1, char const *s2)
 	return (str);
 }
 
-int ft_strchr_index(char const *str, int c)
+int	ft_strchr_index(char const *str, int c)
 {
 	int	i;
 

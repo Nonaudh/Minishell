@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_export.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ahuge <marvin@42.fr>                       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/23 17:57:13 by ahuge             #+#    #+#             */
+/*   Updated: 2024/07/23 17:57:15 by ahuge            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../inc/minishell.h"
 
 int	cmp_env(char *s1, char *s2)
@@ -57,216 +69,18 @@ void	print_tab_int(int *tab, int size, char **env)
 	}
 }
 
-int	error_arg_export(char *str, int *exit_status)
-{
-	ft_putstr_fd("minishell: export: `", 2);
-	ft_putstr_fd(str, 2);
-	ft_putstr_fd("': not a valid identifier\n", 2);
-	*exit_status = 1;
-	return (1);
-}
-
-int check_argument_export(char *str, int *exit_status)
-{
-	int i;
-
-	i = 1;
-	if (!ft_isalpha(str[0]) && str[0] != '_')
-		return (error_arg_export(str, exit_status));
-	while (str[i] && str[i] != '=' && str[i] != '+')
-	{
-		if (!ft_isalnum(str[i]) && str[i] != '_')
-			return (error_arg_export(str, exit_status));
-		i++;
-	}
-	if (str[i] == '+' && str[i + 1] != '=')
-		return (error_arg_export(str, exit_status));
-	return (0);
-}
-
-int search_arg_in_env(char *str, char *env)
-{
-	int i;
-
-	i = 0;
-	while (str[i] && str[i] != '=' && str[i] != '+' && env[i] && env[i] != '=')
-	{
-		if (str[i] != env[i])
-			return (1);
-		i++;
-	}
-	if ((!str[i] || str[i] == '=' || str[i] == '+') && (!env[i] || env[i] == '='))
-		return (0);
-	return (1);
-
-}
-
-char *replace(char *str, char *env)
-{
-	free(env);
-	env = ft_strdup(str);
-	return (env);
-}
-
-char	*join_arg(char *str, char *env)
-{
-	char *new_env;
-
-	new_env = ft_strjoin(env, str);
-	free(env);
-	return (new_env);
-}
-
-char *replace_with_arg(char *str, char *env)
-{
-	int i;
-
-	i = 0;
-	while (str[i] && str[i] != '+' && str[i] != '=')
-		i++;
-	if (!str[i])
-		return (env);
-	if (str[i] == '=')
-		env = replace(str, env);
-	if (str[i] == '+')
-		env = join_arg(str + i + 2, env);
-	return(env);
-}
-
-char	**realloc_and_copy_env(char **env_tmp, int size)
-{
-	char	**env;
-	int		i;
-
-	i = 0;
-	env = malloc(sizeof(char *) * (size + 1));
-	if (!env)
-		return (NULL);
-	while (env_tmp[i])
-	{
-		env[i] = ft_strdup(env_tmp[i]);
-		if (!env[i])
-			return (NULL);
-		i++;
-	}
-	env[i] = NULL;
-	free_the_tab(env_tmp);
-	return (env);
-}
-
-char	*create_without_plus(char *str)
-{
-	char *env;
-	int i;
-
-	i = 0;
-	env = malloc(sizeof(char) * ft_strlen(str));
-	if (!env)
-		return (NULL);
-	while (str[i])
-	{
-		if (str[i] == '+')
-			str++;
-		env[i] = str[i];
-		i++;
-	}
-	env[i] = 0;
-	return (env);
-}
-
-char **create_arg(char *str, char **env_tmp)
-{
-	int	i;
-	char **env;
-	int		size_env;
-
-	size_env = count_arg(env_tmp);
-	env = realloc_and_copy_env(env_tmp, size_env + 1);
-	if (!env)
-		return (NULL);
-	i = 0;
-	while (str[i] && str[i] != '+' && str[i] != '=')
-		i++;
-	if (!str[i] || str[i] == '=')
-		env[size_env] = ft_strdup(str);
-	else
-		env[size_env] = create_without_plus(str);
-	if (!env[size_env])
-		return (NULL);
-	env[size_env + 1] = NULL;
-	return (env);
-}
-
-char	**add_arg_to_env(char *str, char **env, int size, int *exit_status)
-{
-	int i;
-
-	i = 0;
-	if (check_argument_export(str, exit_status) || size > 1)
-		return (env);
-	while (env[i] && search_arg_in_env(str, env[i]))
-		i++;
-	if (env[i])
-	{
-		env[i] = replace_with_arg(str, env[i]);
-		if (!env[i])
-			return (NULL);
-	}
-	else
-		env = create_arg(str, env);
-	return (env);
-}
-
-int	check_option(char **arg)
-{
-	int	i;
-
-	i = 0;
-	if (arg[1] && arg[1][0] == '-' && arg[1][1])
-		return (1);
-	return (0);
-}
-
-char	**error_option(t_commands *cmd, int *exit_status, int error_code)
-{
-	*exit_status = error_code;
-	ft_putstr_fd("bash: ", 2);
-	ft_putstr_fd(cmd->arg[0], 2);
-	ft_putstr_fd(": ", 2);
-	write(2, cmd->arg[1], 2);
-	ft_putstr_fd(": invalid option\n", 2);
-	return (cmd->env);
-}
-
-char	**add_env_variable(t_commands *cmd, int size, int *exit_status)
-{
-	int		i;
-
-	i = 1;
-	if (check_option(cmd->arg))
-		return (error_option(cmd, exit_status, 2));
-	while (cmd->env && cmd->arg[i])
-	{
-		cmd->env = add_arg_to_env(cmd->arg[i], cmd->env, size, exit_status);
-		i++;
-	}
-	return (cmd->env);
-}
-
-int	print_sort_env(char **env)
+int	print_sort_env(char **env, int size_env)
 {
 	int	*tab;
-	int	size;
 	int	i;
 	int	j;
 	int	rank;
 
 	j = 0;
-	size = count_arg(env);
-	tab = malloc(sizeof(int) * size);
+	tab = malloc(sizeof(int) * size_env);
 	if (!tab)
 		return (1);
-	while (j < size)
+	while (j < size_env)
 	{
 		i = 0;
 		rank = 0;
@@ -279,22 +93,25 @@ int	print_sort_env(char **env)
 		tab[rank] = j;
 		j++;
 	}
-	print_tab_int(tab, size, env);
+	print_tab_int(tab, size_env, env);
 	free(tab);
 	return (0);
 }
 
-char	**ft_export(t_commands *cmd, int size, int *exit_status)
+char	**ft_export(t_cmd *cmd, int size, int *ex_st)
 {
-	*exit_status = 0;
-	if (count_arg(&cmd->arg[1]) == 0)
+	int	size_export;
+
+	size_export = count_arg(&cmd->arg[1]);
+	*ex_st = 0;
+	if (size_export == 0)
 	{
-		if (print_sort_env(cmd->env))
+		if (print_sort_env(cmd->env, count_arg(cmd->env)))
 			return (NULL);
 	}
-	if (count_arg(&cmd->arg[1]) > 0)
+	if (size_export > 0)
 	{
-		cmd->env = add_env_variable(cmd, size, exit_status);
+		cmd->env = add_env_variable(cmd, size, ex_st);
 	}
 	return (cmd->env);
 }

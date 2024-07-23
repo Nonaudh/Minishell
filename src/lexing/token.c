@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   token.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: bdany <bdany@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/23 14:08:53 by bdany             #+#    #+#             */
+/*   Updated: 2024/07/23 14:12:17 by bdany            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../inc/minishell.h"
 
 int	error_token(t_token token)
@@ -8,13 +20,16 @@ int	error_token(t_token token)
 
 int	check_syntax(char **lex)
 {
-	int	i = 0;
+	int	i;
 
+	i = 0;
 	if (lex[i][0] == PIPE)
 		return (error_token(PIPE));
 	while (lex[i + 1]
-			&& !(lex[i][0] == PIPE && (lex[i + 1][0] == PIPE || lex[i + 1][0] == T_NEWLINE))
-			&& !(lex[i][0] != PIPE && is_a_token(lex[i][0]) && is_a_token(lex[i + 1][0])))
+		&& !(lex[i][0] == PIPE && (lex[i + 1][0] == PIPE
+		|| lex[i + 1][0] == T_NEWLINE))
+		&& !(lex[i][0] != PIPE && is_token(lex[i][0])
+		&& is_token(lex[i + 1][0])))
 		i++;
 	if (lex[i + 1])
 		return (error_token(lex[i + 1][0]));
@@ -24,6 +39,7 @@ int	check_syntax(char **lex)
 char	*create_token(t_token token)
 {
 	char	*str;
+
 	str = malloc(sizeof(char) * 2);
 	if (!str)
 		return (NULL);
@@ -46,7 +62,7 @@ char	*ft_ttoa(t_token token)
 		return ("<");
 	if (token == LESSLESS)
 		return ("<<");
-	return (NULL);	
+	return (NULL);
 }
 
 char	*return_token(char *str, int *x)

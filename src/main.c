@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ahuge <marvin@42.fr>                       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/23 17:55:10 by ahuge             #+#    #+#             */
+/*   Updated: 2024/07/23 17:55:12 by ahuge            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../inc/minishell.h"
 
 int	g_sig_flag = 0;
@@ -18,8 +30,8 @@ void	handle_sig_mini(int signal)
 
 void	set_signal_exec(void)
 {
-	struct sigaction sa;
-	struct sigaction sa2;
+	struct sigaction	sa;
+	struct sigaction	sa2;
 
 	ft_bzero(&sa, sizeof(struct sigaction));
 	ft_bzero(&sa2, sizeof(struct sigaction));
@@ -27,16 +39,14 @@ void	set_signal_exec(void)
 	sa2.sa_handler = SIG_IGN;
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGQUIT, &sa, NULL);
-	sigaction(SIGPIPE, &sa2, NULL);
 }
-
 
 char	**minishell(char *line, char **env, int *exit_status)
 {
-	char **lex;
-	int size;
-	t_commands *cmd;
-	
+	char	**lex;
+	int		size;
+	t_cmd	*cmd;
+
 	if (!line)
 	{
 		free_the_tab(env);
@@ -74,9 +84,9 @@ void	handle_sig_main(int signal)
 
 void	set_signal_main(void)
 {
-	struct sigaction sa;
-	struct sigaction sa2;
-	
+	struct sigaction	sa;
+	struct sigaction	sa2;
+
 	ft_bzero(&sa, sizeof(struct sigaction));
 	ft_bzero(&sa2, sizeof(struct sigaction));
 	sa.sa_handler = &handle_sig_main;
@@ -95,18 +105,26 @@ int	check_signal(int exit_status)
 	return (exit_status);
 }
 
-int main(int argc, char **argv, char **env_tmp)
+void	void_unused_var(int argc, char **argv)
 {
-	char 	*line;
-	char 	**env;
+	(void)argc;
+	(void)argv;
+	return ;
+}
+
+int	main(int argc, char **argv, char **env_tmp)
+{
+	char	*line;
+	char	**env;
 	int		exit_status;
 
 	line = (void *)1;
 	exit_status = 0;
+	void_unused_var(argc, argv);
 	env = ft_str_tab_dup(env_tmp);
 	if (!env)
 		return (1);
-	while (line)
+	while (line && argc == 1)
 	{
 		set_signal_main();
 		line = readline("Minishell: ");

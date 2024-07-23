@@ -1,31 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_pwd.c                                           :+:      :+:    :+:   */
+/*   utils_3.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: bdany <bdany@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/06/13 16:36:30 by bdany             #+#    #+#             */
-/*   Updated: 2024/07/23 17:57:23 by ahuge            ###   ########.fr       */
+/*   Created: 2024/07/23 14:09:04 by bdany             #+#    #+#             */
+/*   Updated: 2024/07/23 14:23:57 by bdany            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../inc/minishell.h"
 
-int	ft_pwd(t_cmd *cmd, int *ex_st)
+int	error_quote(void)
 {
-	char	cwd[1024];
+	ft_putstr_fd("Error unclosed quote\n", 2);
+	return (-42);
+}
 
-	*ex_st = 0;
-	if (check_option(cmd->arg))
+void	free_the_tab(char **tab)
+{
+	int	i;
+
+	i = 0;
+	if (!tab)
+		return ;
+	while (tab[i])
 	{
-		error_option(cmd, ex_st, 2);
-		return (0);
+		free(tab[i]);
+		i++;
 	}
-	if (getcwd(cwd, sizeof(cwd)))
-	{
-		ft_putendl_fd(cwd, 1);
-		return (0);
-	}
-	return (1);
+	free(tab);
 }
