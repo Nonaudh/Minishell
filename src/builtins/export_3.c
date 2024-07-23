@@ -22,9 +22,18 @@ char	*replace(char *str, char *env)
 char	*join_arg(char *str, char *env)
 {
 	char	*new_env;
+	char	*tmp;
 
-	new_env = ft_strjoin(env, str);
-	free(env);
+	tmp = NULL;
+	if (!ft_strchr(env, '='))
+	{
+		tmp = ft_strjoin(env, "=");
+		free(env);
+	}
+	else
+		tmp = env;
+	new_env = ft_strjoin(tmp, str);
+	free(tmp);
 	return (new_env);
 }
 
