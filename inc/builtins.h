@@ -13,6 +13,25 @@
 #ifndef BUILTINS_H
 # define BUILTINS_H
 
+typedef struct s_commands
+{
+	char	**arg;
+	char	**env;
+	int		fd_in;
+	int		fd_out;
+}	t_cmd;
+
+typedef enum e_token
+{
+	GREAT = 1,
+	LESS,
+	GREATGREAT,
+	LESSLESS,
+	PIPE,
+	T_NEWLINE,
+	T_EMPTY,
+}	t_token;
+
 char	**ft_cd(t_cmd *cmd, int size, int *ex_st);
 char	**switch_pwd_env(char **env);
 char	**update_pwd(char **env);

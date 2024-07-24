@@ -32,3 +32,18 @@ void	free_the_tab(char **tab)
 	}
 	free(tab);
 }
+
+void	ugly_copy_plus_plus(char *src, char *dst, int *i)
+{
+	dst[0] = src[0];
+	(*i)++;
+}
+
+int	count_plus_plus(char *str)
+{
+	int	i;
+
+	i = 0;
+	return (str[i] && (is_token(str[i])
+			|| (str[i] > 32 && (str[i + 1] <= 32 || is_token(str[i + 1])))));
+}

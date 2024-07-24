@@ -41,7 +41,6 @@ int	return_value_exit(char *arg, int *ex_st)
 
 int	check_arg_exit(char **arg, int *ex_st)
 {
-
 	if (return_value_exit(arg[0], ex_st))
 		return (1);
 	if (arg[0] && arg[1])

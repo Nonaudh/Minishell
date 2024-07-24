@@ -47,6 +47,8 @@ int	add_token_newline(char **lex)
 	i = 0;
 	while (lex[i] && lex[i][0])
 		i++;
+	if (lex[i])
+		free(lex[i]);
 	lex[i] = create_token(T_NEWLINE);
 	if (!lex[i])
 		return (1);
@@ -85,12 +87,11 @@ int	count_argc(char *str)
 	count = 0;
 	while (str[i])
 	{
-		while (str[i] <= 32 && str[i] != '\n')
+		while (str[i] && (str[i] <= 32 && str[i] != '\n'))
 			i++;
-		if (is_token(str[i])
-			|| (str[i] > 32 && (str[i + 1] <= 32 || is_token(str[i + 1]))))
+		if (count_plus_plus(str + i))
 			count++;
-		if (str[i] == 34 || str[i] == 39)
+		if (str[i] && (str[i] == 34 || str[i] == 39))
 		{
 			quote = ft_strchr_index(&str[i + 1], str[i]);
 			if (quote == -1)
@@ -99,7 +100,8 @@ int	count_argc(char *str)
 			if (str[i + 1] <= 32 || is_token(str[i + 1]))
 				count++;
 		}
-		i++;
+		if (str[i])
+			i++;
 	}
 	return (count);
 }

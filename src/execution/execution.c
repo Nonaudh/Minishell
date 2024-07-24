@@ -72,6 +72,11 @@ char	**execution(t_cmd *cmd, int size, int *ex_st)
 			else
 				fork_pid = execute_command(cmd, i, size, ex_st);
 		}
+		else
+		{
+			fork_pid = -42;
+			*ex_st = 1;
+		}
 		i++;
 	}
 	close_all_fd_except(cmd, -1, size);

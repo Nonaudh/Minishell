@@ -62,7 +62,6 @@ char	*here_doc_infile(char **lex, char **env, int *ex_st)
 	set_signal_here_doc();
 	hd_name = here_doc_name();
 	write_here_doc(&lex[1], env, ex_st, hd_name);
-	// g_sig_flag = 69;
 	if (g_sig_flag)
 	{
 		dup2(fdin_tmp, STDIN_FILENO);

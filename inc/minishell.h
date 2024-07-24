@@ -13,25 +13,6 @@
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-typedef struct s_commands
-{
-	char	**arg;
-	char	**env;
-	int		fd_in;
-	int		fd_out;
-}	t_cmd;
-
-typedef enum e_token
-{
-	GREAT = 1,
-	LESS,
-	GREATGREAT,
-	LESSLESS,
-	PIPE,
-	T_NEWLINE,
-	T_EMPTY,
-}	t_token;
-
 # include "../lib/libft/libft.h"
 # include "builtins.h"
 # include "execution.h"
@@ -95,5 +76,7 @@ void	error_open_file(char *str, int *ex_st);
 
 void	set_signal_main(void);
 void	handle_sig_main(int signal);
+void	set_signal_exec(void);
+void	handle_sig_mini(int signal);
 
 #endif

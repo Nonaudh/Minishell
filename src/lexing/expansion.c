@@ -25,18 +25,12 @@ char	*erase_quote_and_cpy(char *lex, char *str)
 			quote = str[i];
 			str++;
 			while (str[i] && str[i] != quote)
-			{
-				lex[i] = str[i];
-				i++;
-			}
+				ugly_copy_plus_plus(&str[i], &lex[i], &i);
 			if (str[i])
 				str++;
 		}
 		if (str[i] && str[i] != 34 && str[i] != 39)
-		{
-			lex[i] = str[i];
-			i++;
-		}
+			ugly_copy_plus_plus(&str[i], &lex[i], &i);
 	}
 	lex[i] = 0;
 	return (lex);

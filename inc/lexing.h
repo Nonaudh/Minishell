@@ -39,6 +39,8 @@ int		end_of_env_var(char *str);
 
 int		error_quote(void);
 void	free_the_tab(char **tab);
+void	ugly_copy_plus_plus(char *src, char *dst, int *i);
+int		count_plus_plus(char *str);
 
 void	free_struct_cmd(t_cmd *cmd, int size);
 char	**ft_str_tab_dup(char **tab1);
