@@ -22,7 +22,7 @@ int	check_argument_env(char **arg)
 char	**error_argument(t_cmd *cmd, int *ex_st, int error_code)
 {
 	*ex_st = error_code;
-	ft_putstr_fd("bash: env: ", 2);
+	ft_putstr_fd("minishell: env: ", 2);
 	ft_putstr_fd(cmd->arg[1], 2);
 	ft_putstr_fd(": invalid argument\n", 2);
 	return (cmd->env);

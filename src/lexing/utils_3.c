@@ -14,7 +14,7 @@
 
 int	error_quote(void)
 {
-	ft_putstr_fd("Error unclosed quote\n", 2);
+	ft_putstr_fd("minishell: syntax error near unexpected unclosed quote\n", 2);
 	return (-42);
 }
 

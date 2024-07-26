@@ -22,7 +22,7 @@ int	check_option(char **arg)
 char	**error_option(t_cmd *cmd, int *ex_st, int error_code)
 {
 	*ex_st = error_code;
-	ft_putstr_fd("bash: ", 2);
+	ft_putstr_fd("minishell: ", 2);
 	ft_putstr_fd(cmd->arg[0], 2);
 	ft_putstr_fd(": ", 2);
 	write(2, cmd->arg[1], 2);

@@ -68,7 +68,7 @@ int	main(int argc, char **argv, char **env_tmp)
 	while (line && argc == 1)
 	{
 		set_signal_main();
-		line = readline("Minishell: ");
+		line = readline("minishell: ");
 		exit_status = check_signal(exit_status);
 		if (line && *line)
 			add_history(line);

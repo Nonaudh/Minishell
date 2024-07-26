@@ -34,7 +34,7 @@ char	**cd_to_root(t_cmd *cmd, int *ex_st)
 
 	home = ft_getenv("HOME", cmd->env);
 	if (!home)
-		error("bash: cd: HOME not set\n", ex_st);
+		error("minishell: cd: HOME not set\n", ex_st);
 	else
 	{
 		if (chdir(home))
@@ -57,6 +57,6 @@ char	**ft_cd(t_cmd *cmd, int size, int *ex_st)
 	else if (count_arg(&cmd->arg[1]) == 0)
 		cmd->env = cd_to_root(cmd, ex_st);
 	else
-		error("bash: cd: too many arguments\n", ex_st);
+		error("minishell: cd: too many arguments\n", ex_st);
 	return (cmd->env);
 }

@@ -14,7 +14,9 @@
 
 int	error_token(t_token token)
 {
-	printf("bash: syntax error near unexpected token `%s'\n", ft_ttoa(token));
+	ft_putstr_fd("minishell: syntax error near unexpected token `", 2);
+	ft_putstr_fd(ft_ttoa(token), 2);
+	ft_putstr_fd("'\n", 2);
 	return (1);
 }
 

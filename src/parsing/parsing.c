@@ -17,7 +17,7 @@ int	piped(t_cmd *cmd_in, t_cmd *cmd_out)
 	int	pipe_fd[2];
 
 	if (pipe(pipe_fd))
-		printf("Error pipe\n");
+		return (-1);
 	if (cmd_in->fd_out == STDOUT_FILENO)
 		cmd_in->fd_out = pipe_fd[1];
 	else

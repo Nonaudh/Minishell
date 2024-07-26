@@ -30,7 +30,7 @@ char	*ft_getenv(char *str, char **env)
 
 void	error_is_a_directory(char *dir)
 {
-	ft_putstr_fd("bash: ", 2);
+	ft_putstr_fd("minishell: ", 2);
 	ft_putstr_fd(dir, 2);
 	ft_putstr_fd(": Is a directory\n", 2);
 }

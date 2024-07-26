@@ -101,6 +101,7 @@ char	**update_pwd(char **env)
 	{
 		str = join_with_new_pwd(ft_strdup("PWD="));
 		env = create_arg(str, env);
+		free(str);
 	}
 	return (env);
 }

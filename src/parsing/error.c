@@ -14,7 +14,7 @@
 
 void	error_limiter_hd(char *limiteur)
 {
-	ft_putstr_fd("bash: warning: here-document ", 2);
+	ft_putstr_fd("minishell: warning: here-document ", 2);
 	ft_putstr_fd("delimited by end-of-file (wanted `", 2);
 	ft_putstr_fd(limiteur, 2);
 	ft_putstr_fd("')\n", 2);

@@ -113,7 +113,10 @@ char	**lexing(char *line, char **env, int *ex_st)
 
 	argc = count_argc(line) + 3;
 	if (argc < 0)
+	{
+		*ex_st = 2;
 		return (NULL);
+	}
 	lex = fill_lex(line, argc);
 	if (!lex)
 		return (NULL);
